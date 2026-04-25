@@ -1,0 +1,3889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flappy 3D Bird Deluxe</title>
+<style>
+:root {
+  --ground-h: 82px;
+  --bird-x: 94px;
+  --bird-y: 250px;
+  --bird-r: 0deg;
+  --cloud-x: 0px;
+  --hill-x: 0px;
+  --ground-x: 0px;
+  --sky-top: hsl(199 95% 68%);
+  --sky-mid: hsl(197 95% 78%);
+  --sky-low: hsl(113 58% 70%);
+  --star-opacity: 0;
+  --sun-opacity: 1;
+  --skin-main: hsl(43 98% 56%);
+  --skin-light: hsl(52 100% 74%);
+  --skin-dark: hsl(31 82% 42%);
+  --skin-side: hsl(38 86% 48%);
+  --skin-wing: hsl(27 90% 50%);
+  --skin-wing-dark: hsl(24 70% 38%);
+  --skin-cheek: hsla(13 100% 72% / 0.62);
+  --skin-beak-a: hsl(31 100% 60%);
+  --skin-beak-b: hsl(17 100% 51%);
+  --skin-glow: hsla(45 100% 72% / 0.42);
+  --skin-eye: hsl(0 0% 7%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: hsl(216 38% 10%);
+  color: white;
+}
+
+body {
+  display: grid;
+  place-items: center;
+}
+
+button {
+  font: inherit;
+}
+
+.app {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.game {
+  position: relative;
+  width: min(94vw, 540px);
+  height: min(86vh, 780px);
+  height: min(86dvh, 780px);
+  min-height: 560px;
+  max-height: 780px;
+  overflow: hidden;
+  border-radius: 30px;
+  background:
+    linear-gradient(var(--sky-top), var(--sky-mid) 58%, var(--sky-low));
+  box-shadow:
+    0 34px 88px rgba(0, 0, 0, 0.44),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.15);
+  user-select: none;
+  touch-action: none;
+  isolation: isolate;
+}
+
+.sky-glow,
+.stars,
+.clouds,
+.hills,
+.pipes,
+.coins,
+.particles,
+.ground,
+.hud,
+.countdown,
+.overlay,
+.flash {
+  position: absolute;
+}
+
+.sky-glow {
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 72% 15%, rgba(255, 246, 184, calc(0.7 * var(--sun-opacity))) 0 4%, transparent 15%),
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.25), transparent 34%),
+    linear-gradient(rgba(255, 255, 255, 0.08), transparent 36%);
+}
+
+.stars {
+  inset: 0;
+  z-index: 1;
+  opacity: var(--star-opacity);
+  background-image:
+    radial-gradient(circle at 13% 16%, white 0 1px, transparent 2px),
+    radial-gradient(circle at 35% 10%, white 0 1px, transparent 2px),
+    radial-gradient(circle at 62% 22%, white 0 1px, transparent 2px),
+    radial-gradient(circle at 83% 12%, white 0 1px, transparent 2px),
+    radial-gradient(circle at 74% 35%, white 0 1px, transparent 2px),
+    radial-gradient(circle at 26% 34%, white 0 1px, transparent 2px);
+}
+
+.clouds {
+  inset: 0;
+  z-index: 2;
+  opacity: 0.86;
+  background-image:
+    radial-gradient(circle at 40px 42px, rgba(255, 255, 255, 0.95) 0 20px, transparent 22px),
+    radial-gradient(circle at 68px 34px, rgba(255, 255, 255, 0.9) 0 27px, transparent 29px),
+    radial-gradient(circle at 102px 46px, rgba(255, 255, 255, 0.92) 0 20px, transparent 22px),
+    radial-gradient(circle at 282px 96px, rgba(255, 255, 255, 0.72) 0 18px, transparent 20px),
+    radial-gradient(circle at 314px 86px, rgba(255, 255, 255, 0.8) 0 25px, transparent 27px),
+    radial-gradient(circle at 348px 99px, rgba(255, 255, 255, 0.72) 0 17px, transparent 19px);
+  background-size: 440px 176px;
+  background-position: var(--cloud-x) 32px;
+}
+
+.hills {
+  left: 0;
+  right: 0;
+  bottom: var(--ground-h);
+  height: 190px;
+  z-index: 3;
+  opacity: 0.95;
+  background:
+    radial-gradient(ellipse at 82px 155px, hsl(101 46% 45%) 0 88px, transparent 91px),
+    radial-gradient(ellipse at 247px 164px, hsl(105 42% 53%) 0 110px, transparent 113px),
+    radial-gradient(ellipse at 438px 155px, hsl(98 45% 47%) 0 98px, transparent 101px);
+  background-size: 540px 190px;
+  background-position: var(--hill-x) 0;
+}
+
+.pipes,
+.coins,
+.particles {
+  inset: 0;
+  pointer-events: none;
+}
+
+.pipes {
+  z-index: 5;
+}
+
+.coins {
+  z-index: 6;
+  perspective: 500px;
+}
+
+.particles {
+  z-index: 9;
+}
+
+.pipe-set {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 74px;
+  height: 100%;
+  will-change: transform;
+}
+
+.pipe {
+  position: absolute;
+  left: 0;
+  width: 74px;
+  background:
+    linear-gradient(
+      90deg,
+      hsl(126 60% 28%),
+      hsl(122 65% 48%) 18%,
+      hsl(116 72% 58%) 42%,
+      hsl(123 58% 34%) 78%,
+      hsl(126 58% 22%)
+    );
+  box-shadow:
+    inset 9px 0 0 rgba(255, 255, 255, 0.17),
+    inset -11px 0 0 rgba(0, 0, 0, 0.17),
+    0 10px 20px rgba(0, 0, 0, 0.22);
+}
+
+.pipe::before {
+  content: "";
+  position: absolute;
+  inset: 0 12px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.18),
+      transparent
+    );
+}
+
+.pipe.top {
+  top: 0;
+  border-radius: 0 0 16px 16px;
+}
+
+.pipe.bottom {
+  bottom: var(--ground-h);
+  border-radius: 16px 16px 0 0;
+}
+
+.cap {
+  position: absolute;
+  left: -9px;
+  width: 92px;
+  height: 28px;
+  background:
+    linear-gradient(
+      90deg,
+      hsl(126 55% 25%),
+      hsl(120 68% 55%) 22%,
+      hsl(116 72% 62%) 48%,
+      hsl(123 58% 32%) 82%,
+      hsl(126 55% 20%)
+    );
+  box-shadow:
+    inset 8px 0 0 rgba(255, 255, 255, 0.16),
+    inset -10px 0 0 rgba(0, 0, 0, 0.18),
+    0 6px 12px rgba(0, 0, 0, 0.18);
+}
+
+.cap-bottom {
+  bottom: -1px;
+  border-radius: 0 0 15px 15px;
+}
+
+.cap-top {
+  top: -1px;
+  border-radius: 15px 15px 0 0;
+}
+
+.coin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+
+.coin-core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, hsl(56 100% 82%), hsl(45 100% 54%) 45%, hsl(35 93% 43%) 78%);
+  box-shadow:
+    inset -4px -5px 0 rgba(0, 0, 0, 0.16),
+    inset 4px 4px 0 rgba(255, 255, 255, 0.3),
+    0 6px 12px rgba(0, 0, 0, 0.22);
+  animation: coinSpin 700ms linear infinite;
+}
+
+.coin-core::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  border: 2px solid rgba(125, 72, 0, 0.28);
+}
+
+.coin-core::after {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 7px;
+  width: 8px;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.44);
+  transform: rotate(22deg);
+}
+
+.coin.collected {
+  animation: coinCollect 220ms ease-out forwards;
+}
+
+.bird-wrap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 84px;
+  height: 66px;
+  z-index: 8;
+  perspective: 620px;
+  transform:
+    translate3d(var(--bird-x), var(--bird-y), 0)
+    rotate(var(--bird-r));
+  will-change: transform;
+}
+
+.bird-model {
+  position: relative;
+  width: 84px;
+  height: 66px;
+  transform-style: preserve-3d;
+  transform: rotateY(-19deg) rotateX(8deg);
+  filter:
+    drop-shadow(0 13px 9px rgba(0, 0, 0, 0.25))
+    drop-shadow(0 0 12px var(--skin-glow));
+}
+
+.body-side,
+.body-front,
+.body-back,
+.body-belly,
+.head-front,
+.head-back,
+.head-side,
+.wing-near,
+.wing-far,
+.beak-top,
+.beak-bottom,
+.eye,
+.eye-shine,
+.tail-a,
+.tail-b,
+.foot-a,
+.foot-b,
+.cheek,
+.brow {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.body-side {
+  left: 11px;
+  top: 16px;
+  width: 49px;
+  height: 37px;
+  border-radius: 50%;
+  background: var(--skin-side);
+  transform: translateZ(0);
+  box-shadow:
+    0 0 0 15px var(--skin-side),
+    inset -12px -8px 0 rgba(0, 0, 0, 0.14);
+}
+
+.body-front {
+  left: 10px;
+  top: 15px;
+  width: 52px;
+  height: 39px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 62% 30%, var(--skin-light), var(--skin-main) 56%, var(--skin-dark));
+  transform: translateZ(17px);
+}
+
+.body-back {
+  left: 9px;
+  top: 15px;
+  width: 50px;
+  height: 38px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 45% 32%, var(--skin-main), var(--skin-dark));
+  transform: translateZ(-17px);
+}
+
+.body-belly {
+  left: 29px;
+  top: 31px;
+  width: 25px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.24);
+  transform: translateZ(31px) rotate(-7deg);
+}
+
+.head-side {
+  left: 42px;
+  top: 8px;
+  width: 33px;
+  height: 33px;
+  border-radius: 50%;
+  background: var(--skin-side);
+  transform: translateZ(3px);
+  box-shadow: 0 0 0 10px var(--skin-side);
+}
+
+.head-front {
+  left: 41px;
+  top: 7px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 60% 31%, var(--skin-light), var(--skin-main) 60%, var(--skin-dark));
+  transform: translateZ(22px);
+}
+
+.head-back {
+  left: 40px;
+  top: 8px;
+  width: 33px;
+  height: 33px;
+  border-radius: 50%;
+  background: var(--skin-dark);
+  transform: translateZ(-12px);
+}
+
+.eye {
+  left: 62px;
+  top: 16px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--skin-eye);
+  transform: translateZ(37px);
+}
+
+.eye-shine {
+  left: 65px;
+  top: 17px;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: white;
+  transform: translateZ(39px);
+}
+
+.brow {
+  left: 59px;
+  top: 12px;
+  width: 12px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  transform: translateZ(38px) rotate(-8deg);
+}
+
+.cheek {
+  left: 53px;
+  top: 26px;
+  width: 13px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--skin-cheek);
+  transform: translateZ(36px);
+}
+
+.beak-top {
+  left: 70px;
+  top: 20px;
+  width: 24px;
+  height: 12px;
+  background:
+    linear-gradient(90deg, var(--skin-beak-a), var(--skin-beak-b));
+  clip-path: polygon(0 0, 100% 52%, 0 100%);
+  transform: translateZ(26px) rotateY(5deg);
+}
+
+.beak-bottom {
+  left: 69px;
+  top: 29px;
+  width: 19px;
+  height: 9px;
+  background:
+    linear-gradient(90deg, hsl(24 95% 45%), hsl(13 90% 45%));
+  clip-path: polygon(0 0, 100% 35%, 0 100%);
+  transform: translateZ(24px) rotateY(5deg);
+  opacity: 0.88;
+}
+
+.wing-near {
+  left: 14px;
+  top: 27px;
+  width: 34px;
+  height: 20px;
+  border-radius: 62% 42% 68% 48%;
+  background:
+    radial-gradient(circle at 35% 25%, var(--skin-light), var(--skin-wing) 68%);
+  transform-origin: 84% 36%;
+  transform: translateZ(34px) rotate(-18deg);
+  animation: wingNear 250ms ease-in-out infinite alternate;
+}
+
+.wing-near::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  width: 18px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.12);
+  transform: rotate(-9deg);
+}
+
+.wing-far {
+  left: 10px;
+  top: 27px;
+  width: 31px;
+  height: 18px;
+  border-radius: 62% 42% 68% 48%;
+  background: var(--skin-wing-dark);
+  opacity: 0.75;
+  transform-origin: 84% 36%;
+  transform: translateZ(-22px) rotateY(180deg) rotate(-10deg);
+  animation: wingFar 285ms ease-in-out infinite alternate;
+}
+
+.tail-a,
+.tail-b {
+  left: 0;
+  background:
+    linear-gradient(90deg, var(--skin-dark), var(--skin-main));
+}
+
+.tail-a {
+  top: 24px;
+  width: 24px;
+  height: 16px;
+  clip-path: polygon(0 10%, 100% 0, 78% 52%, 100% 100%, 0 82%);
+  transform: translateZ(4px) rotate(-11deg);
+}
+
+.tail-b {
+  top: 35px;
+  width: 22px;
+  height: 15px;
+  clip-path: polygon(0 20%, 100% 0, 78% 52%, 100% 100%, 0 78%);
+  transform: translateZ(-8px) rotate(8deg);
+  opacity: 0.84;
+}
+
+.foot-a,
+.foot-b {
+  width: 15px;
+  height: 7px;
+  border-radius: 999px;
+  background: hsl(29 100% 45%);
+  transform: translateZ(11px);
+}
+
+.foot-a {
+  left: 32px;
+  top: 53px;
+  transform: translateZ(14px) rotate(8deg);
+}
+
+.foot-b {
+  left: 45px;
+  top: 52px;
+  transform: translateZ(6px) rotate(-8deg);
+  opacity: 0.8;
+}
+
+.ground {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--ground-h);
+  z-index: 10;
+  background:
+    linear-gradient(hsl(39 85% 58%) 0 18px, hsl(31 72% 46%) 18px 100%);
+  box-shadow:
+    inset 0 8px 0 rgba(255, 255, 255, 0.2),
+    0 -12px 24px rgba(0, 0, 0, 0.13);
+}
+
+.ground::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  height: 18px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      hsl(93 60% 40%) 0 38px,
+      hsl(103 62% 48%) 38px 76px
+    );
+  background-position: var(--ground-x) 0;
+}
+
+.ground::after {
+  content: "";
+  position: absolute;
+  inset: 18px 0 0;
+  background:
+    radial-gradient(circle at 24px 18px, rgba(110, 70, 30, 0.28) 0 4px, transparent 5px),
+    radial-gradient(circle at 90px 42px, rgba(110, 70, 30, 0.22) 0 5px, transparent 6px),
+    radial-gradient(circle at 160px 28px, rgba(110, 70, 30, 0.22) 0 4px, transparent 5px);
+  background-size: 210px 70px;
+  background-position: var(--ground-x) 0;
+}
+
+.hud {
+  left: 16px;
+  right: 16px;
+  top: 14px;
+  z-index: 18;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: start;
+  pointer-events: none;
+}
+
+.stat-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.stat-row.right {
+  justify-content: flex-end;
+}
+
+.score-box,
+.best-box,
+.coin-box {
+  min-width: 78px;
+  padding: 8px 11px;
+  border-radius: 17px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(8px);
+  text-align: center;
+  box-shadow: 0 9px 22px rgba(0, 0, 0, 0.16);
+}
+
+.score-box {
+  min-width: 96px;
+}
+
+.label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.score-value,
+.best-value,
+.coin-value {
+  display: block;
+  font-size: 28px;
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.18);
+}
+
+
+.countdown {
+  inset: 0;
+  z-index: 24;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.countdown.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.countdown-text {
+  font-size: clamp(72px, 18vw, 130px);
+  font-weight: 1000;
+  letter-spacing: -0.08em;
+  text-shadow:
+    0 8px 0 rgba(0, 0, 0, 0.2),
+    0 22px 38px rgba(0, 0, 0, 0.25);
+}
+
+.countdown-text.pop {
+  animation: countdownPop 360ms ease-out;
+}
+
+.overlay {
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 170ms ease;
+}
+
+.overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.panel {
+  width: min(94%, 405px);
+  max-height: min(92vh, 700px);
+  max-height: min(92dvh, 700px);
+  overflow: auto;
+  padding: 22px;
+  border-radius: 30px;
+  text-align: center;
+  background: rgba(13, 27, 43, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: 0 28px 72px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(13px);
+}
+
+.title {
+  font-size: 38px;
+  font-weight: 1000;
+  letter-spacing: -0.06em;
+  margin-bottom: 7px;
+}
+
+.message {
+  margin: 0 0 17px;
+  line-height: 1.42;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.panel-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin-bottom: 15px;
+}
+
+.panel-stat {
+  padding: 10px 8px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.panel-stat strong {
+  display: block;
+  font-size: 22px;
+  line-height: 1.05;
+}
+
+.panel-stat span {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  opacity: 0.72;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.play-button {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 13px 24px;
+  color: hsl(220 38% 14%);
+  background:
+    linear-gradient(180deg, hsl(54 100% 73%), hsl(36 100% 55%));
+  font-weight: 950;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow:
+    0 9px 0 hsl(28 77% 37%),
+    0 18px 28px rgba(0, 0, 0, 0.28);
+  transform: translateY(0);
+}
+
+.play-button:active {
+  transform: translateY(5px);
+  box-shadow:
+    0 4px 0 hsl(28 77% 37%),
+    0 12px 20px rgba(0, 0, 0, 0.26);
+}
+
+
+.skin-panel {
+  margin-top: 2px;
+  text-align: left;
+}
+
+.skin-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 2px 9px;
+  font-size: 13px;
+  font-weight: 850;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.skin-title-row span:last-child {
+  color: hsl(47 100% 68%);
+}
+
+.skin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.skin-card {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border-radius: 19px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+}
+
+.skin-card.selected {
+  border-color: hsl(48 100% 64%);
+  background: rgba(255, 218, 79, 0.16);
+}
+
+.skin-card.locked {
+  opacity: 0.82;
+}
+
+.skin-card:active {
+  transform: translateY(2px);
+}
+
+.skin-swatch {
+  width: 40px;
+  height: 32px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 64% 31%, var(--swatch-light), var(--swatch-main) 58%, var(--swatch-dark));
+  box-shadow:
+    inset -7px -5px 0 rgba(0, 0, 0, 0.14),
+    0 7px 13px rgba(0, 0, 0, 0.18);
+  position: relative;
+}
+
+.skin-swatch::before {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: 9px;
+  width: 16px;
+  height: 10px;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  background: var(--swatch-beak);
+}
+
+.skin-swatch::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: hsl(0 0% 8%);
+}
+
+.skin-name {
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.skin-state {
+  margin-top: 2px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.skin-panel.shake {
+  animation: shake 240ms ease-in-out;
+}
+
+.flash {
+  inset: 0;
+  z-index: 25;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.flash.show {
+  animation: flashHit 220ms ease-out;
+}
+
+.particle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 999px;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.particle.feather {
+  background:
+    linear-gradient(90deg, var(--skin-light), var(--skin-wing));
+  border-radius: 70% 30% 65% 35%;
+}
+
+.particle.spark {
+  background:
+    radial-gradient(circle, hsl(54 100% 76%), hsl(37 100% 50%));
+  box-shadow: 0 0 10px rgba(255, 221, 80, 0.55);
+}
+
+.particle.hit {
+  background:
+    radial-gradient(circle, hsl(12 100% 68%), hsl(2 87% 48%));
+  box-shadow: 0 0 10px rgba(255, 80, 60, 0.44);
+}
+
+@keyframes wingNear {
+  from {
+    transform: translateZ(34px) rotate(16deg);
+  }
+  to {
+    transform: translateZ(34px) rotate(-36deg);
+  }
+}
+
+@keyframes wingFar {
+  from {
+    transform: translateZ(-22px) rotateY(180deg) rotate(5deg);
+  }
+  to {
+    transform: translateZ(-22px) rotateY(180deg) rotate(-24deg);
+  }
+}
+
+@keyframes coinSpin {
+  0% {
+    transform: rotateY(0deg) scaleX(1);
+  }
+  50% {
+    transform: rotateY(180deg) scaleX(0.55);
+  }
+  100% {
+    transform: rotateY(360deg) scaleX(1);
+  }
+}
+
+@keyframes coinCollect {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.7) translateY(-18px);
+  }
+}
+
+@keyframes countdownPop {
+  0% {
+    transform: scale(0.72);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes flashHit {
+  0% {
+    opacity: 0.72;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-7px);
+  }
+  75% {
+    transform: translateX(7px);
+  }
+}
+
+@media (max-width: 440px) {
+  .app {
+    padding: 0;
+  }
+
+  .game {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .hud {
+    left: 10px;
+    right: 10px;
+    top: 10px;
+    gap: 6px;
+  }
+
+  .bird-wrap {
+    width: 80px;
+    height: 64px;
+  }
+
+  .score-box,
+  .best-box,
+  .coin-box {
+    min-width: 66px;
+    padding: 7px 8px;
+  }
+
+  .score-box {
+    min-width: 82px;
+  }
+
+  .score-value,
+  .best-value,
+  .coin-value {
+    font-size: 24px;
+  }
+
+  .panel {
+    width: min(94%, 390px);
+    padding: 18px;
+    border-radius: 26px;
+  }
+
+  .title {
+    font-size: 34px;
+  }
+
+  .skin-grid {
+    gap: 7px;
+  }
+
+  .skin-card {
+    padding: 8px;
+    grid-template-columns: 36px 1fr;
+  }
+
+  .skin-swatch {
+    width: 34px;
+    height: 28px;
+  }
+}
+
+.bird-wrap {
+  width: 66px;
+  height: 50px;
+}
+
+.bird-model {
+  width: 66px;
+  height: 50px;
+  transform: rotateY(-15deg) rotateX(6deg);
+  filter:
+    drop-shadow(0 10px 7px rgba(0, 0, 0, 0.22))
+    drop-shadow(0 0 8px var(--skin-glow));
+}
+
+.body-side {
+  left: 8px;
+  top: 14px;
+  width: 36px;
+  height: 26px;
+  box-shadow:
+    0 0 0 6px var(--skin-side),
+    inset -8px -5px 0 rgba(0, 0, 0, 0.12);
+}
+
+.body-front {
+  left: 7px;
+  top: 13px;
+  width: 40px;
+  height: 29px;
+  transform: translateZ(12px);
+}
+
+.body-back {
+  left: 7px;
+  top: 14px;
+  width: 38px;
+  height: 28px;
+  transform: translateZ(-12px);
+}
+
+.body-belly {
+  left: 24px;
+  top: 26px;
+  width: 18px;
+  height: 12px;
+  transform: translateZ(23px) rotate(-7deg);
+}
+
+.head-side {
+  left: 33px;
+  top: 7px;
+  width: 25px;
+  height: 25px;
+  box-shadow: 0 0 0 5px var(--skin-side);
+  transform: translateZ(2px);
+}
+
+.head-front {
+  left: 32px;
+  top: 6px;
+  width: 27px;
+  height: 27px;
+  transform: translateZ(16px);
+}
+
+.head-back {
+  left: 32px;
+  top: 7px;
+  width: 25px;
+  height: 25px;
+  transform: translateZ(-9px);
+}
+
+.eye {
+  left: 49px;
+  top: 13px;
+  width: 6px;
+  height: 6px;
+  transform: translateZ(28px);
+}
+
+.eye-shine {
+  left: 51px;
+  top: 14px;
+  width: 2px;
+  height: 2px;
+  transform: translateZ(30px);
+}
+
+.brow {
+  left: 46px;
+  top: 10px;
+  width: 10px;
+  height: 3px;
+  transform: translateZ(29px) rotate(-8deg);
+}
+
+.cheek {
+  left: 43px;
+  top: 21px;
+  width: 10px;
+  height: 6px;
+  transform: translateZ(27px);
+}
+
+.beak-top {
+  left: 56px;
+  top: 17px;
+  width: 19px;
+  height: 9px;
+  transform: translateZ(20px) rotateY(5deg);
+}
+
+.beak-bottom {
+  left: 55px;
+  top: 24px;
+  width: 15px;
+  height: 7px;
+  transform: translateZ(18px) rotateY(5deg);
+}
+
+.wing-near {
+  left: 10px;
+  top: 24px;
+  width: 25px;
+  height: 15px;
+  transform: translateZ(23px) rotate(-18deg);
+}
+
+.wing-near::after {
+  right: 3px;
+  bottom: 2px;
+  width: 13px;
+  height: 4px;
+}
+
+.wing-far {
+  left: 8px;
+  top: 24px;
+  width: 23px;
+  height: 14px;
+  transform: translateZ(-15px) rotateY(180deg) rotate(-10deg);
+}
+
+.tail-a {
+  top: 22px;
+  width: 18px;
+  height: 12px;
+  transform: translateZ(3px) rotate(-10deg);
+}
+
+.tail-b {
+  top: 31px;
+  width: 16px;
+  height: 11px;
+  transform: translateZ(-6px) rotate(8deg);
+}
+
+.foot-a,
+.foot-b {
+  width: 11px;
+  height: 5px;
+}
+
+.foot-a {
+  left: 25px;
+  top: 42px;
+  transform: translateZ(10px) rotate(8deg);
+}
+
+.foot-b {
+  left: 36px;
+  top: 42px;
+  transform: translateZ(5px) rotate(-8deg);
+}
+
+.skin-card {
+  border-color: rgba(255, 255, 255, 0.26);
+  background: rgba(5, 16, 30, 0.48);
+}
+
+.skin-card.locked {
+  opacity: 1;
+  background: rgba(8, 20, 35, 0.72);
+}
+
+.skin-card.selected {
+  border-color: hsl(48 100% 68%);
+  background: rgba(255, 218, 79, 0.2);
+}
+
+.skin-name {
+  color: white;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.42);
+}
+
+.skin-state {
+  display: inline-block;
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 950;
+  line-height: 1;
+  color: hsl(49 100% 72%);
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.skin-card.locked .skin-state {
+  padding: 5px 7px;
+  border-radius: 999px;
+  color: hsl(31 60% 11%);
+  background: linear-gradient(180deg, hsl(52 100% 72%), hsl(38 100% 54%));
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+  text-shadow: none;
+}
+
+.skin-card.selected .skin-state {
+  color: hsl(52 100% 77%);
+}
+
+.skin-title-row span:last-child {
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: hsl(31 60% 11%);
+  background: linear-gradient(180deg, hsl(52 100% 74%), hsl(38 100% 55%));
+}
+
+@keyframes wingNear {
+  from {
+    transform: translateZ(23px) rotate(14deg);
+  }
+  to {
+    transform: translateZ(23px) rotate(-32deg);
+  }
+}
+
+@keyframes wingFar {
+  from {
+    transform: translateZ(-15px) rotateY(180deg) rotate(5deg);
+  }
+  to {
+    transform: translateZ(-15px) rotateY(180deg) rotate(-22deg);
+  }
+}
+
+@media (max-width: 440px) {
+  .bird-wrap {
+    width: 66px;
+    height: 50px;
+  }
+
+  .skin-state {
+    font-size: 11px;
+  }
+}
+
+
+.hud {
+  grid-template-columns: 1fr 1fr;
+}
+
+.evil-button {
+  position: absolute;
+  left: 50%;
+  top: 72px;
+  z-index: 44;
+  appearance: none;
+  border: 2px solid rgba(255, 35, 35, 0.95);
+  border-radius: 999px;
+  padding: 11px 18px;
+  color: white;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 54, 54, 0.35), transparent 58%),
+    linear-gradient(180deg, rgba(62, 0, 0, 0.92), rgba(12, 0, 0, 0.94));
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 18px rgba(255, 0, 0, 0.7),
+    0 0 34px rgba(160, 0, 0, 0.55),
+    inset 0 0 18px rgba(255, 0, 0, 0.26);
+  text-shadow:
+    0 0 8px rgba(255, 0, 0, 0.82),
+    0 2px 0 rgba(0, 0, 0, 0.45);
+  transform: translateX(-50%);
+  animation: evilButtonPulse 780ms ease-in-out infinite alternate;
+  backdrop-filter: blur(8px);
+}
+
+.evil-button:active {
+  transform: translateX(-50%) translateY(2px) scale(0.98);
+}
+
+.evil-button.active {
+  color: hsl(52 100% 78%);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 245, 145, 0.22), transparent 55%),
+    linear-gradient(180deg, #730000, #240000 58%, #050000);
+  animation-duration: 360ms;
+}
+
+.evil-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 88;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at center, transparent 0 34%, rgba(120, 0, 0, 0.24) 54%, rgba(30, 0, 0, 0.72) 76%, rgba(0, 0, 0, 0.94) 100%);
+  mix-blend-mode: multiply;
+  transition: opacity 150ms ease;
+}
+
+.evil-screen-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 125;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.evil-screen-flash.crimson {
+  animation: evilCrimsonFlash 390ms ease-out forwards;
+}
+
+.evil-screen-flash.restore {
+  animation: evilWhiteFlash 260ms ease-out forwards;
+}
+
+.evil-burst-particle {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 126;
+  border-radius: 999px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, hsl(52 100% 82%), hsl(8 100% 50%) 56%, transparent 72%);
+  box-shadow:
+    0 0 12px rgba(255, 0, 0, 0.92),
+    0 0 24px rgba(255, 220, 80, 0.35);
+  animation: evilBurst 690ms cubic-bezier(0.08, 0.8, 0.12, 1) forwards;
+}
+
+body.evil-mode {
+  background:
+    radial-gradient(circle at 50% 18%, #3d0000 0 15%, #1a0000 46%, #000 100%);
+  color: white;
+  animation: evilFireFlicker 155ms steps(2, end) infinite;
+}
+
+body.evil-mode .evil-vignette {
+  opacity: 1;
+  animation: evilVignettePulse 720ms ease-in-out infinite alternate;
+}
+
+body.evil-shake .app {
+  animation: evilScreenShake 0.5s linear both;
+  transform-origin: center;
+}
+
+body.evil-mode .game {
+  background:
+    radial-gradient(circle at 48% 8%, rgba(255, 32, 0, 0.18), transparent 17%),
+    radial-gradient(circle at 72% 42%, rgba(130, 0, 0, 0.38), transparent 28%),
+    linear-gradient(180deg, #3d0000 0%, #1a0000 52%, #020000 100%);
+  box-shadow:
+    0 34px 95px rgba(0, 0, 0, 0.72),
+    0 0 44px rgba(255, 0, 0, 0.48),
+    inset 0 0 0 3px rgba(255, 0, 0, 0.58),
+    inset 0 0 58px rgba(160, 0, 0, 0.42);
+  filter: hue-rotate(-12deg) saturate(1.45) contrast(1.1);
+}
+
+body.evil-mode .sky-glow {
+  background:
+    radial-gradient(circle at 50% 12%, rgba(255, 21, 0, 0.4), transparent 20%),
+    radial-gradient(circle at 17% 22%, rgba(255, 200, 72, 0.13), transparent 32%),
+    linear-gradient(rgba(255, 0, 0, 0.18), transparent 36%);
+}
+
+body.evil-mode .stars {
+  opacity: 0.42;
+  filter: drop-shadow(0 0 7px rgba(255, 0, 0, 0.95));
+}
+
+body.evil-mode .clouds {
+  opacity: 0.15;
+  filter: contrast(2.2) saturate(0.18) brightness(0.48);
+}
+
+body.evil-mode .hills {
+  opacity: 0.96;
+  background:
+    radial-gradient(ellipse at 82px 155px, #360000 0 88px, transparent 91px),
+    radial-gradient(ellipse at 247px 164px, #5a0000 0 110px, transparent 113px),
+    radial-gradient(ellipse at 438px 155px, #270000 0 98px, transparent 101px);
+  background-size: 540px 190px;
+  background-position: var(--hill-x) 0;
+}
+
+body.evil-mode .ground {
+  background:
+    linear-gradient(#5c0000 0 18px, #170000 18px 100%);
+  box-shadow:
+    inset 0 8px 0 rgba(255, 0, 0, 0.22),
+    0 -12px 30px rgba(255, 0, 0, 0.2),
+    0 0 24px rgba(255, 0, 0, 0.32);
+}
+
+body.evil-mode .ground::before {
+  background:
+    repeating-linear-gradient(90deg, #7b0000 0 38px, #210000 38px 76px);
+  background-position: var(--ground-x) 0;
+}
+
+body.evil-mode .ground::after {
+  background:
+    radial-gradient(circle at 24px 18px, rgba(255, 0, 0, 0.3) 0 4px, transparent 5px),
+    radial-gradient(circle at 90px 42px, rgba(255, 145, 0, 0.18) 0 5px, transparent 6px),
+    radial-gradient(circle at 160px 28px, rgba(255, 0, 0, 0.22) 0 4px, transparent 5px);
+  background-size: 210px 70px;
+  background-position: var(--ground-x) 0;
+}
+
+body.evil-mode .pipe,
+body.evil-mode .cap {
+  background:
+    linear-gradient(90deg, #070000, #2d0000 18%, #8c0000 43%, #390000 78%, #050000);
+  box-shadow:
+    inset 9px 0 0 rgba(255, 80, 80, 0.16),
+    inset -11px 0 0 rgba(0, 0, 0, 0.42),
+    0 0 18px rgba(255, 0, 0, 0.5),
+    0 10px 20px rgba(0, 0, 0, 0.42);
+}
+
+body.evil-mode .coin-core {
+  background:
+    radial-gradient(circle at 35% 30%, hsl(58 100% 82%), hsl(44 100% 50%) 38%, hsl(3 100% 36%) 76%);
+  box-shadow:
+    inset -4px -5px 0 rgba(0, 0, 0, 0.24),
+    inset 4px 4px 0 rgba(255, 255, 255, 0.26),
+    0 0 18px rgba(255, 0, 0, 0.72),
+    0 6px 12px rgba(0, 0, 0, 0.35);
+}
+
+body.evil-mode .score-box,
+body.evil-mode .best-box,
+body.evil-mode .coin-box,
+body.evil-mode .panel,
+body.evil-mode .panel-stat,
+body.evil-mode .skin-card {
+  color: white;
+  background: rgba(17, 0, 0, 0.84);
+  border-color: rgba(255, 0, 0, 0.58);
+  box-shadow:
+    0 0 18px rgba(255, 0, 0, 0.42),
+    inset 0 0 22px rgba(120, 0, 0, 0.32);
+}
+
+body.evil-mode .panel {
+  background: rgba(8, 0, 0, 0.93);
+}
+
+body.evil-mode .title,
+body.evil-mode .score-value,
+body.evil-mode .best-value,
+body.evil-mode .coin-value,
+body.evil-mode .panel-stat strong,
+body.evil-mode .skin-name,
+body.evil-mode .countdown-text {
+  color: white;
+  text-shadow:
+    0 0 12px rgba(255, 0, 0, 0.92),
+    0 3px 0 rgba(0, 0, 0, 0.4);
+}
+
+body.evil-mode .label,
+body.evil-mode .message,
+body.evil-mode .panel-stat span,
+body.evil-mode .skin-title-row,
+body.evil-mode .skin-state,
+body.evil-mode .coin-bank {
+  color: hsl(54 100% 76%);
+  opacity: 1;
+}
+
+body.evil-mode .play-button,
+body.evil-mode .skin-card,
+body.evil-mode .skin-card.locked .skin-state,
+body.evil-mode .skin-title-row span:last-child {
+  color: white;
+  background:
+    linear-gradient(180deg, #690000, #2a0000 58%, #090000);
+  border-color: rgba(255, 30, 30, 0.74);
+  box-shadow:
+    0 7px 0 #130000,
+    0 0 22px rgba(255, 0, 0, 0.5),
+    inset 0 0 22px rgba(255, 0, 0, 0.18);
+  text-shadow: 0 0 9px rgba(255, 0, 0, 0.72);
+}
+
+body.evil-mode .skin-card.selected {
+  border-color: hsl(0 100% 61%);
+  background: rgba(92, 0, 0, 0.72);
+}
+
+body.evil-mode .bird-model {
+  filter:
+    drop-shadow(0 13px 9px rgba(0, 0, 0, 0.38))
+    drop-shadow(0 0 18px rgba(255, 0, 0, 0.78));
+}
+
+body.evil-mode .pipe,
+body.evil-mode .cap,
+body.evil-mode .coin-core,
+body.evil-mode .ground,
+body.evil-mode .score-box,
+body.evil-mode .best-box,
+body.evil-mode .coin-box,
+body.evil-mode .panel,
+body.evil-mode .skin-card,
+body.evil-mode .play-button,
+body.evil-mode .countdown-text {
+  filter: drop-shadow(0 0 9px rgba(255, 0, 0, 0.55));
+}
+
+body.evil-mode .particle.spark,
+body.evil-mode .particle.hit {
+  box-shadow: 0 0 14px rgba(255, 0, 0, 0.86);
+}
+
+@keyframes evilButtonPulse {
+  0% {
+    border-color: rgba(255, 44, 44, 0.7);
+    box-shadow:
+      0 0 9px rgba(255, 0, 0, 0.42),
+      0 0 24px rgba(120, 0, 0, 0.34),
+      inset 0 0 12px rgba(255, 0, 0, 0.18);
+  }
+  100% {
+    border-color: rgba(255, 219, 116, 0.95);
+    box-shadow:
+      0 0 17px rgba(255, 0, 0, 0.86),
+      0 0 44px rgba(255, 0, 0, 0.68),
+      inset 0 0 21px rgba(255, 0, 0, 0.34);
+  }
+}
+
+@keyframes evilFireFlicker {
+  0% {
+    filter: hue-rotate(-8deg) saturate(1.32) brightness(0.9);
+  }
+  24% {
+    filter: hue-rotate(-15deg) saturate(1.68) brightness(1.13);
+  }
+  48% {
+    filter: hue-rotate(-4deg) saturate(1.5) brightness(0.96);
+  }
+  72% {
+    filter: hue-rotate(-18deg) saturate(1.82) brightness(1.19);
+  }
+  100% {
+    filter: hue-rotate(-10deg) saturate(1.42) brightness(1.02);
+  }
+}
+
+@keyframes evilScreenShake {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  8% {
+    transform: translate3d(-18px, 11px, 0) rotate(-1.4deg);
+  }
+  16% {
+    transform: translate3d(17px, -10px, 0) rotate(1.2deg);
+  }
+  24% {
+    transform: translate3d(-22px, -6px, 0) rotate(-1.8deg);
+  }
+  32% {
+    transform: translate3d(20px, 9px, 0) rotate(1.5deg);
+  }
+  40% {
+    transform: translate3d(-15px, 13px, 0) rotate(-1.1deg);
+  }
+  48% {
+    transform: translate3d(14px, -12px, 0) rotate(1.3deg);
+  }
+  56% {
+    transform: translate3d(-10px, 8px, 0) rotate(-0.8deg);
+  }
+  64% {
+    transform: translate3d(12px, 5px, 0) rotate(0.9deg);
+  }
+  72% {
+    transform: translate3d(-8px, -5px, 0) rotate(-0.6deg);
+  }
+  84% {
+    transform: translate3d(6px, 3px, 0) rotate(0.4deg);
+  }
+}
+
+@keyframes evilCrimsonFlash {
+  0% {
+    opacity: 0;
+    background: #2b0000;
+  }
+  12% {
+    opacity: 0.97;
+    background: #610000;
+  }
+  44% {
+    opacity: 0.72;
+    background: #3d0000;
+  }
+  100% {
+    opacity: 0;
+    background: transparent;
+  }
+}
+
+@keyframes evilWhiteFlash {
+  0% {
+    opacity: 0;
+    background: white;
+  }
+  18% {
+    opacity: 0.92;
+    background: white;
+  }
+  100% {
+    opacity: 0;
+    background: transparent;
+  }
+}
+
+@keyframes evilBurst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.35) rotate(0deg);
+  }
+  70% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--evil-dx)), calc(-50% + var(--evil-dy))) scale(0.1) rotate(var(--evil-rot));
+  }
+}
+
+@keyframes evilVignettePulse {
+  0% {
+    opacity: 0.74;
+  }
+  100% {
+    opacity: 0.96;
+  }
+}
+
+.evil-speedlines,
+.evil-runes,
+.evil-noise {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.evil-speedlines {
+  z-index: 16;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background:
+    repeating-linear-gradient(
+      -66deg,
+      transparent 0 18px,
+      rgba(255, 220, 120, 0.06) 18px 20px,
+      rgba(255, 35, 35, 0.26) 20px 24px,
+      transparent 24px 50px
+    );
+  transform: scale(1.15) rotate(0deg);
+}
+
+.evil-runes {
+  z-index: 17;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.evil-rune {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 56, 56, 0.7);
+  box-shadow:
+    0 0 10px rgba(255, 0, 0, 0.85),
+    0 0 28px rgba(255, 160, 0, 0.22),
+    inset 0 0 18px rgba(255, 0, 0, 0.34);
+  transform: translate(-50%, -50%) scale(var(--scale)) rotate(0deg);
+  opacity: 0.84;
+  animation: evilRuneSpin var(--dur) linear infinite;
+}
+
+.evil-rune::before,
+.evil-rune::after {
+  content: "";
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 210, 90, 0.36);
+}
+
+.evil-rune::after {
+  inset: 30%;
+  border-color: rgba(255, 60, 60, 0.56);
+}
+
+.evil-noise {
+  z-index: 19;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.06) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 72% 54%, rgba(255, 0, 0, 0.08) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 40% 70%, rgba(255, 210, 90, 0.06) 0 1px, transparent 1.5px),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 6px);
+  background-size: 140px 140px, 180px 180px, 120px 120px, 100% 6px;
+  mix-blend-mode: screen;
+}
+
+body.evil-mode {
+  background:
+    radial-gradient(circle at 50% 12%, #8a0000 0 12%, #2b0000 34%, #050000 64%, #000 100%);
+  animation: evilFireFlicker 95ms steps(2, end) infinite;
+}
+
+body.evil-mode .evil-vignette {
+  opacity: 1;
+  animation: evilVignettePulse 260ms ease-in-out infinite alternate;
+}
+
+body.evil-shake .app {
+  animation: evilScreenShake 0.28s linear both;
+}
+
+body.evil-mode .game {
+  background:
+    radial-gradient(circle at 50% 6%, rgba(255, 255, 255, 0.08), transparent 10%),
+    radial-gradient(circle at 50% 12%, rgba(255, 42, 0, 0.38), transparent 16%),
+    radial-gradient(circle at 80% 38%, rgba(255, 0, 0, 0.28), transparent 23%),
+    radial-gradient(circle at 18% 24%, rgba(255, 180, 0, 0.16), transparent 20%),
+    linear-gradient(180deg, #4f0000 0%, #1a0000 44%, #020000 100%);
+  box-shadow:
+    0 36px 120px rgba(0, 0, 0, 0.82),
+    0 0 90px rgba(255, 0, 0, 0.62),
+    0 0 180px rgba(255, 80, 0, 0.24),
+    inset 0 0 0 3px rgba(255, 0, 0, 0.72),
+    inset 0 0 100px rgba(255, 0, 0, 0.34),
+    inset 0 -70px 140px rgba(255, 90, 0, 0.16);
+  filter: hue-rotate(-18deg) saturate(1.95) contrast(1.28) brightness(1.05);
+  animation: evilGameWarp 0.34s linear infinite;
+}
+
+body.evil-mode .game::before,
+body.evil-mode .game::after {
+  content: "";
+  position: absolute;
+  inset: -14%;
+  pointer-events: none;
+}
+
+body.evil-mode .game::before {
+  z-index: 15;
+  background:
+    linear-gradient(180deg, rgba(255, 80, 0, 0.12), transparent 58%),
+    repeating-linear-gradient(90deg, transparent 0 52px, rgba(255, 0, 0, 0.12) 52px 56px, transparent 56px 124px);
+  mix-blend-mode: screen;
+  opacity: 0.8;
+  animation: evilHaloSpin 2.2s linear infinite;
+}
+
+body.evil-mode .game::after {
+  z-index: 16;
+  background:
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 5px),
+    linear-gradient(90deg, transparent, rgba(255, 40, 40, 0.08), transparent);
+  mix-blend-mode: screen;
+  opacity: 0.58;
+  animation: evilScan 0.16s linear infinite;
+}
+
+body.evil-mode .evil-speedlines {
+  opacity: 0.92;
+  animation: evilSpeedlines 0.16s linear infinite;
+}
+
+body.evil-mode .evil-runes {
+  opacity: 1;
+}
+
+body.evil-mode .evil-noise {
+  opacity: 0.9;
+  animation: evilNoise 0.18s steps(3, end) infinite;
+}
+
+body.evil-mode .evil-button {
+  border-color: rgba(255, 235, 120, 0.96);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 0 24px rgba(255, 0, 0, 0.96),
+    0 0 56px rgba(255, 0, 0, 0.82),
+    0 0 120px rgba(255, 120, 0, 0.3),
+    inset 0 0 32px rgba(255, 0, 0, 0.44);
+  transform: translateX(-50%) scale(1.02);
+}
+
+body.evil-mode .evil-button.active {
+  color: hsl(50 100% 78%);
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.3),
+    0 0 18px rgba(255, 0, 0, 0.96),
+    0 0 34px rgba(255, 150, 0, 0.55);
+  animation: evilButtonPulse 120ms ease-in-out infinite alternate;
+}
+
+body.evil-mode .bird-wrap {
+  filter: drop-shadow(0 0 12px rgba(255, 0, 0, 0.92)) drop-shadow(0 0 28px rgba(255, 150, 0, 0.34));
+}
+
+body.evil-mode .bird-model {
+  filter:
+    drop-shadow(0 13px 9px rgba(0, 0, 0, 0.42))
+    drop-shadow(0 0 28px rgba(255, 0, 0, 0.96))
+    drop-shadow(0 0 60px rgba(255, 180, 0, 0.25));
+  animation: evilBirdJitter 0.12s steps(2, end) infinite;
+}
+
+body.evil-mode .coin-core {
+  filter: drop-shadow(0 0 18px rgba(255, 0, 0, 0.92));
+  animation: evilCoinOrbit 0.2s linear infinite;
+}
+
+body.evil-mode .score-box,
+body.evil-mode .best-box,
+body.evil-mode .coin-box,
+body.evil-mode .panel,
+body.evil-mode .panel-stat,
+body.evil-mode .skin-card {
+  background: rgba(25, 0, 0, 0.88);
+  border-color: rgba(255, 40, 40, 0.72);
+  box-shadow:
+    0 0 20px rgba(255, 0, 0, 0.56),
+    0 0 48px rgba(255, 110, 0, 0.12),
+    inset 0 0 30px rgba(120, 0, 0, 0.4);
+}
+
+body.evil-mode .title,
+body.evil-mode .score-value,
+body.evil-mode .best-value,
+body.evil-mode .coin-value,
+body.evil-mode .panel-stat strong,
+body.evil-mode .skin-name,
+body.evil-mode .countdown-text {
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.12),
+    0 0 18px rgba(255, 0, 0, 0.96),
+    0 0 48px rgba(255, 130, 0, 0.22),
+    0 3px 0 rgba(0, 0, 0, 0.4);
+}
+
+body.evil-mode .pipe-set {
+  filter: drop-shadow(0 0 16px rgba(255, 0, 0, 0.56));
+}
+
+body.evil-mode .particle.spark,
+body.evil-mode .particle.hit,
+body.evil-mode .particle.feather,
+body.evil-mode .evil-burst-particle {
+  filter: drop-shadow(0 0 12px rgba(255, 0, 0, 0.95));
+}
+
+@keyframes evilGameWarp {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  25% {
+    transform: translate3d(1px, -1px, 0) scale(1.003);
+  }
+  50% {
+    transform: translate3d(-1px, 1px, 0) scale(1.005);
+  }
+  75% {
+    transform: translate3d(1px, 1px, 0) scale(1.002);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes evilHaloSpin {
+  from {
+    transform: rotate(0deg) scale(1.05);
+  }
+  to {
+    transform: rotate(360deg) scale(1.05);
+  }
+}
+
+@keyframes evilScan {
+  from {
+    transform: translateY(-8px);
+  }
+  to {
+    transform: translateY(8px);
+  }
+}
+
+@keyframes evilSpeedlines {
+  from {
+    transform: translateX(0) scale(1.15) skewX(0deg);
+  }
+  to {
+    transform: translateX(-130px) scale(1.18) skewX(-10deg);
+  }
+}
+
+@keyframes evilNoise {
+  0% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(-8px, 6px);
+  }
+  66% {
+    transform: translate(7px, -5px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes evilRuneSpin {
+  from {
+    transform: translate(-50%, -50%) scale(var(--scale)) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(var(--scale)) rotate(360deg);
+  }
+}
+
+@keyframes evilBirdJitter {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  25% {
+    transform: translate3d(1px, -1px, 0);
+  }
+  50% {
+    transform: translate3d(-1px, 1px, 0);
+  }
+  75% {
+    transform: translate3d(1px, 1px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes evilCoinOrbit {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate3d(2px, -1px, 0) rotate(90deg);
+  }
+  50% {
+    transform: translate3d(0, 1px, 0) rotate(180deg);
+  }
+  75% {
+    transform: translate3d(-2px, -1px, 0) rotate(270deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(360deg);
+  }
+}
+
+@media (max-width: 440px) {
+  .evil-button {
+    top: 68px;
+    padding: 9px 12px;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+}
+
+.hell-lava,
+.hell-flames,
+.hell-embers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.hell-lava {
+  z-index: 4;
+  top: auto;
+  height: 44%;
+  background:
+    linear-gradient(180deg, transparent 0 12%, rgba(70, 0, 0, 0.34) 42%, rgba(0, 0, 0, 0.72) 100%),
+    repeating-linear-gradient(102deg, transparent 0 24px, rgba(255, 70, 0, 0.48) 24px 27px, transparent 27px 78px),
+    repeating-linear-gradient(78deg, transparent 0 35px, rgba(255, 180, 0, 0.22) 35px 38px, transparent 38px 92px);
+  mix-blend-mode: screen;
+}
+
+.hell-flames {
+  z-index: 16;
+  top: auto;
+  height: 48%;
+  background:
+    radial-gradient(ellipse at 8% 100%, rgba(255, 45, 0, 0.84) 0 8%, transparent 21%),
+    radial-gradient(ellipse at 22% 100%, rgba(255, 130, 0, 0.7) 0 9%, transparent 24%),
+    radial-gradient(ellipse at 37% 100%, rgba(255, 35, 0, 0.9) 0 10%, transparent 26%),
+    radial-gradient(ellipse at 56% 100%, rgba(255, 170, 0, 0.62) 0 8%, transparent 22%),
+    radial-gradient(ellipse at 73% 100%, rgba(255, 45, 0, 0.86) 0 11%, transparent 28%),
+    radial-gradient(ellipse at 90% 100%, rgba(255, 120, 0, 0.66) 0 8%, transparent 21%),
+    linear-gradient(180deg, transparent, rgba(255, 40, 0, 0.22) 54%, rgba(255, 110, 0, 0.34));
+  transform-origin: bottom center;
+  mix-blend-mode: screen;
+}
+
+.hell-embers {
+  z-index: 18;
+  background:
+    radial-gradient(circle at 12% 78%, rgba(255, 170, 0, 0.75) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 31% 63%, rgba(255, 70, 0, 0.7) 0 1.4px, transparent 2.5px),
+    radial-gradient(circle at 52% 82%, rgba(255, 210, 90, 0.75) 0 1.3px, transparent 2.3px),
+    radial-gradient(circle at 71% 69%, rgba(255, 80, 0, 0.7) 0 1.4px, transparent 2.4px),
+    radial-gradient(circle at 86% 76%, rgba(255, 190, 70, 0.74) 0 1.4px, transparent 2.4px);
+  background-size: 180px 220px;
+  mix-blend-mode: screen;
+}
+
+body.evil-mode .evil-runes,
+body.evil-mode .evil-rune {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+body.evil-mode {
+  background: linear-gradient(180deg, #120000 0%, #3a0000 45%, #050000 100%);
+  animation: none;
+}
+
+body.evil-mode .game {
+  background:
+    linear-gradient(180deg, #170000 0%, #520000 35%, #1a0000 66%, #020000 100%);
+  filter: saturate(1.42) contrast(1.12);
+  animation: none;
+  box-shadow:
+    0 34px 95px rgba(0, 0, 0, 0.78),
+    0 0 70px rgba(255, 0, 0, 0.5),
+    inset 0 0 0 3px rgba(255, 50, 0, 0.62),
+    inset 0 -95px 140px rgba(255, 60, 0, 0.18);
+}
+
+body.evil-mode .game::before {
+  z-index: 15;
+  background:
+    linear-gradient(180deg, rgba(255, 0, 0, 0.12), transparent 38%),
+    repeating-linear-gradient(90deg, transparent 0 46px, rgba(255, 88, 0, 0.09) 46px 49px, transparent 49px 110px);
+  opacity: 0.5;
+  mix-blend-mode: screen;
+  animation: hellHeat 1.2s ease-in-out infinite alternate;
+}
+
+body.evil-mode .game::after {
+  z-index: 20;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 55, 0, 0.12), transparent),
+    repeating-linear-gradient(180deg, rgba(255, 95, 0, 0.035) 0 2px, transparent 2px 8px);
+  opacity: 0.38;
+  mix-blend-mode: screen;
+  animation: hellHeat 0.85s ease-in-out infinite alternate;
+}
+
+body.evil-mode .hell-lava {
+  opacity: 0.95;
+  animation: hellLava 2.2s linear infinite;
+}
+
+body.evil-mode .hell-flames {
+  opacity: 0.92;
+  animation: hellFlames 0.72s ease-in-out infinite alternate;
+}
+
+body.evil-mode .hell-embers {
+  opacity: 0.95;
+  animation: hellEmbers 3.4s linear infinite;
+}
+
+body.evil-mode .evil-speedlines {
+  opacity: 0.46;
+  background:
+    repeating-linear-gradient(-72deg, transparent 0 42px, rgba(255, 160, 0, 0.12) 42px 45px, rgba(255, 0, 0, 0.2) 45px 47px, transparent 47px 105px);
+  animation: evilSpeedlines 0.24s linear infinite;
+}
+
+body.evil-mode .evil-noise {
+  opacity: 0.32;
+  animation: evilNoise 0.6s steps(2, end) infinite;
+}
+
+body.evil-mode .clouds {
+  opacity: 0.04;
+}
+
+body.evil-mode .stars {
+  opacity: 0.18;
+}
+
+body.evil-mode .hills {
+  opacity: 0.78;
+  background:
+    radial-gradient(ellipse at 82px 155px, #1a0000 0 88px, transparent 91px),
+    radial-gradient(ellipse at 247px 164px, #3d0000 0 110px, transparent 113px),
+    radial-gradient(ellipse at 438px 155px, #160000 0 98px, transparent 101px);
+}
+
+body.evil-mode .pipe,
+body.evil-mode .cap {
+  background: linear-gradient(90deg, #050000, #250000 18%, #9a1400 42%, #390000 78%, #050000);
+  box-shadow:
+    inset 9px 0 0 rgba(255, 130, 50, 0.14),
+    inset -11px 0 0 rgba(0, 0, 0, 0.42),
+    0 0 16px rgba(255, 55, 0, 0.48),
+    0 10px 20px rgba(0, 0, 0, 0.42);
+}
+
+body.evil-mode .evil-button.active {
+  color: hsl(36 100% 72%);
+  background: linear-gradient(180deg, #ff3b00, #750000 46%, #0a0000);
+  animation: evilButtonPulse 260ms ease-in-out infinite alternate;
+}
+
+body.hell-blast .game {
+  box-shadow:
+    0 0 120px rgba(255, 55, 0, 0.85),
+    inset 0 0 85px rgba(255, 140, 0, 0.42);
+}
+
+body.hell-blast .hell-flames {
+  opacity: 1;
+  transform: scaleY(1.35);
+}
+
+@keyframes hellFlames {
+  0% {
+    transform: translateY(8px) scaleY(0.98) skewX(-1deg);
+    filter: brightness(0.9);
+  }
+  100% {
+    transform: translateY(-8px) scaleY(1.12) skewX(1deg);
+    filter: brightness(1.25);
+  }
+}
+
+@keyframes hellLava {
+  from {
+    background-position: 0 0, 0 0, 0 0;
+  }
+  to {
+    background-position: 0 0, -180px 0, 150px 0;
+  }
+}
+
+@keyframes hellEmbers {
+  from {
+    background-position: 0 220px;
+  }
+  to {
+    background-position: 0 -220px;
+  }
+}
+
+@keyframes hellHeat {
+  from {
+    transform: translateY(0) skewX(-0.6deg);
+  }
+  to {
+    transform: translateY(-8px) skewX(0.8deg);
+  }
+}
+
+/* ── COMBOSS HACKER EXORTER – EVIL LOGO SURROUND ── */
+.evil-logos-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+body.evil-mode .evil-logos-wrap {
+  opacity: 1;
+}
+
+.evil-logo-pos {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.evil-logo-pos.top {
+  top: 12px;
+  left: 50%;
+  margin-left: -50px;
+}
+
+.evil-logo-pos.bottom {
+  bottom: 12px;
+  left: 50%;
+  margin-left: -50px;
+}
+
+.evil-logo-pos.left {
+  left: 12px;
+  top: 50%;
+  margin-top: -50px;
+}
+
+.evil-logo-pos.right {
+  right: 12px;
+  top: 50%;
+  margin-top: -50px;
+}
+
+.evil-logo-spin-inner {
+  width: 90px;
+  height: 90px;
+  animation: evilLogoFullSpin 1.6s linear infinite;
+  filter:
+    drop-shadow(0 0 10px rgba(255, 0, 0, 0.95))
+    drop-shadow(0 0 24px rgba(255, 60, 0, 0.7))
+    drop-shadow(0 0 48px rgba(200, 0, 0, 0.4));
+}
+
+.evil-logo-spin-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.evil-764 {
+  position: absolute;
+  font-size: 22px;
+  font-weight: 1000;
+  letter-spacing: 0.06em;
+  color: #ff1100;
+  font-family: system-ui, -apple-system, sans-serif;
+  text-shadow:
+    0 0 8px rgba(255, 0, 0, 1),
+    0 0 20px rgba(255, 80, 0, 0.9),
+    0 0 40px rgba(255, 0, 0, 0.6),
+    0 2px 0 #000;
+  animation: evilLogoFullSpin 1.6s linear infinite;
+  line-height: 1;
+}
+
+.evil-764.corner-tl { top: 16px;    left: 16px;  }
+.evil-764.corner-tr { top: 16px;    right: 16px; }
+.evil-764.corner-bl { bottom: 16px; left: 16px;  }
+.evil-764.corner-br { bottom: 16px; right: 16px; }
+
+.evil-ip-bar {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.55);
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+@keyframes evilLogoFullSpin {
+  0%   { transform: rotate(0deg);   }
+  100% { transform: rotate(360deg); }
+}
+
+
+/* ── FAKE RAT DOWNLOAD GAG ── */
+.rat-bar-wrap {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 400;
+  pointer-events: none;
+  width: min(340px, 88vw);
+  background: rgba(0, 0, 0, 0.82);
+  border: 1px solid rgba(255, 40, 0, 0.6);
+  border-radius: 10px;
+  padding: 10px 14px 12px;
+  box-shadow: 0 0 18px rgba(255, 0, 0, 0.35);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.rat-bar-wrap.visible { opacity: 1; }
+.rat-bar-label {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ff3300;
+  letter-spacing: 0.08em;
+  margin-bottom: 7px;
+  text-shadow: 0 0 8px rgba(255, 0, 0, 0.7);
+}
+.rat-bar-track {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 7px;
+}
+.rat-bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff0000, #ff6600 50%, #ffcc00);
+  box-shadow: 0 0 8px rgba(255, 80, 0, 0.8);
+  transition: width 0.06s linear;
+}
+.rat-bar-status {
+  font-family: monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.04em;
+}
+.rat-bar-status.done {
+  color: #ff3300;
+  font-size: 13px;
+  font-weight: 900;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+  letter-spacing: 0.1em;
+  animation: ratDoneFlicker 0.18s steps(2,end) infinite;
+}
+@keyframes ratDoneFlicker {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="game" aria-label="Flappy 3D Bird Deluxe game">
+    <div class="sky-glow"></div>
+    <div class="stars"></div>
+    <div class="clouds"></div>
+    <div class="hills"></div>
+    <div class="pipes"></div>
+    <div class="coins"></div>
+    <div class="particles"></div>
+    <div class="evil-speedlines" aria-hidden="true"></div>
+    <div class="evil-runes" aria-hidden="true"></div>
+    <div class="evil-noise" aria-hidden="true"></div>
+    <div class="hell-lava" aria-hidden="true"></div>
+    <div class="hell-flames" aria-hidden="true"></div>
+    <div class="hell-embers" aria-hidden="true"></div>
+
+    <div class="bird-wrap" aria-hidden="true">
+      <div class="bird-model">
+        <div class="tail-b"></div>
+        <div class="body-side"></div>
+        <div class="body-back"></div>
+        <div class="head-back"></div>
+        <div class="wing-far"></div>
+        <div class="tail-a"></div>
+        <div class="body-front"></div>
+        <div class="body-belly"></div>
+        <div class="head-side"></div>
+        <div class="head-front"></div>
+        <div class="wing-near"></div>
+        <div class="beak-bottom"></div>
+        <div class="beak-top"></div>
+        <div class="cheek"></div>
+        <div class="brow"></div>
+        <div class="eye"></div>
+        <div class="eye-shine"></div>
+        <div class="foot-b"></div>
+        <div class="foot-a"></div>
+      </div>
+    </div>
+
+    <div class="ground"></div>
+
+    <section class="hud">
+      <div class="stat-row">
+        <div class="score-box">
+          <span class="label">Score</span>
+          <span class="score-value">0</span>
+        </div>
+      </div>
+      <div class="stat-row right">
+        <div class="coin-box">
+          <span class="label">Coins</span>
+          <span class="coin-value">0</span>
+        </div>
+        <div class="best-box">
+          <span class="label">Best</span>
+          <span class="best-value">0</span>
+        </div>
+      </div>
+    </section>
+
+    <button class="evil-button" type="button" aria-label="Toggle EVIL MODE" aria-pressed="false">😈 EVIL MODE</button>
+
+    <div class="countdown">
+      <div class="countdown-text">3</div>
+    </div>
+
+    <div class="flash"></div>
+
+    <section class="overlay visible">
+      <div class="panel">
+        <div class="title">Flappy 3D</div>
+        <p class="message">Collect coins, unlock skins, and flap through fair gaps.</p>
+
+        <div class="panel-stats">
+          <div class="panel-stat">
+            <strong class="panel-last">0</strong>
+            <span>Last</span>
+          </div>
+          <div class="panel-stat">
+            <strong class="panel-best">0</strong>
+            <span>Best</span>
+          </div>
+          <div class="panel-stat">
+            <strong class="panel-coins">0</strong>
+            <span>Coins</span>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="play-button" type="button">Start Game</button>
+        </div>
+
+        <div class="skin-panel">
+          <div class="skin-title-row">
+            <span>Bird Skins</span>
+            <span class="coin-bank">0 coins</span>
+          </div>
+          <div class="skin-grid"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="evil-vignette" aria-hidden="true"></div>
+<div class="evil-screen-flash" aria-hidden="true"></div>
+
+<!-- COMBOSS HACKER EXORTER – spinning logos on 4 sides, 764 in corners, evil mode only -->
+<div class="evil-logos-wrap" aria-hidden="true">
+  <div class="evil-logo-pos top">
+    <div class="evil-logo-spin-inner"><img src="wp15003410.webp" alt=""></div>
+  </div>
+  <div class="evil-logo-pos bottom">
+    <div class="evil-logo-spin-inner"><img src="wp15003410.webp" alt=""></div>
+  </div>
+  <div class="evil-logo-pos left">
+    <div class="evil-logo-spin-inner"><img src="wp15003410.webp" alt=""></div>
+  </div>
+  <div class="evil-logo-pos right">
+    <div class="evil-logo-spin-inner"><img src="wp15003410.webp" alt=""></div>
+  </div>
+  <div class="evil-764 corner-tl">764</div>
+  <div class="evil-764 corner-tr">764</div>
+  <div class="evil-764 corner-bl">764</div>
+  <div class="evil-764 corner-br">764</div>
+  <div class="evil-ip-bar">ur ip: <span class="evil-ip-val">...</span></div>
+
+<!-- FAKE RAT DOWNLOAD GAG -->
+<div class="rat-bar-wrap" id="ratBar">
+  <div class="rat-bar-label">⬇ DOWNLOADING RAT</div>
+  <div class="rat-bar-track"><div class="rat-bar-fill" id="ratFill"></div></div>
+  <div class="rat-bar-status" id="ratStatus">connecting to server...</div>
+</div>
+
+</div>
+
+<audio class="evil-audio" src="specialsadism_spotdown.org.mp3" preload="auto" loop></audio>
+
+<script>
+const game = document.querySelector(".game")
+const pipesLayer = document.querySelector(".pipes")
+const coinsLayer = document.querySelector(".coins")
+const particlesLayer = document.querySelector(".particles")
+const overlay = document.querySelector(".overlay")
+const title = document.querySelector(".title")
+const message = document.querySelector(".message")
+const playButton = document.querySelector(".play-button")
+const scoreValue = document.querySelector(".score-value")
+const bestValue = document.querySelector(".best-value")
+const coinValue = document.querySelector(".coin-value")
+const panelLast = document.querySelector(".panel-last")
+const panelBest = document.querySelector(".panel-best")
+const panelCoins = document.querySelector(".panel-coins")
+const coinBank = document.querySelector(".coin-bank")
+const skinGrid = document.querySelector(".skin-grid")
+const skinPanel = document.querySelector(".skin-panel")
+const countdown = document.querySelector(".countdown")
+const countdownText = document.querySelector(".countdown-text")
+const flash = document.querySelector(".flash")
+const evilButton = document.querySelector(".evil-button")
+const evilFlash = document.querySelector(".evil-screen-flash")
+const evilAudio = document.querySelector(".evil-audio")
+const evilRunes = document.querySelector(".evil-runes")
+
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value))
+const rand = (min, max) => min + Math.random() * (max - min)
+
+const storage = {
+  get(key, fallback) {
+    try {
+      const value = localStorage.getItem(key)
+      return value === null ? fallback : value
+    } catch {
+      return fallback
+    }
+  },
+  set(key, value) {
+    try {
+      localStorage.setItem(key, String(value))
+    } catch {
+    }
+  }
+}
+
+function readNumber(key, fallback) {
+  const value = Number(storage.get(key, fallback))
+  return Number.isFinite(value) && value >= 0 ? value : fallback
+}
+
+function readList(key, fallback) {
+  try {
+    const value = JSON.parse(storage.get(key, JSON.stringify(fallback)))
+    return Array.isArray(value) ? value : fallback
+  } catch {
+    return fallback
+  }
+}
+
+const skins = [
+  {
+    id: "sunny",
+    name: "Sunny",
+    cost: 0,
+    vars: {
+      main: "hsl(43 98% 56%)",
+      light: "hsl(52 100% 74%)",
+      dark: "hsl(31 82% 42%)",
+      side: "hsl(38 86% 48%)",
+      wing: "hsl(27 90% 50%)",
+      wingDark: "hsl(24 70% 38%)",
+      cheek: "hsla(13 100% 72% / 0.62)",
+      beakA: "hsl(31 100% 60%)",
+      beakB: "hsl(17 100% 51%)",
+      glow: "hsla(45 100% 72% / 0.42)",
+      eye: "hsl(0 0% 7%)"
+    }
+  },
+  {
+    id: "berry",
+    name: "Berry",
+    cost: 8,
+    vars: {
+      main: "hsl(335 84% 60%)",
+      light: "hsl(344 100% 78%)",
+      dark: "hsl(323 66% 36%)",
+      side: "hsl(333 72% 48%)",
+      wing: "hsl(288 72% 55%)",
+      wingDark: "hsl(284 56% 35%)",
+      cheek: "hsla(20 100% 78% / 0.62)",
+      beakA: "hsl(38 100% 64%)",
+      beakB: "hsl(20 100% 53%)",
+      glow: "hsla(330 100% 72% / 0.4)",
+      eye: "hsl(0 0% 8%)"
+    }
+  },
+  {
+    id: "bluejay",
+    name: "Bluejay",
+    cost: 14,
+    vars: {
+      main: "hsl(207 88% 58%)",
+      light: "hsl(194 100% 78%)",
+      dark: "hsl(221 69% 38%)",
+      side: "hsl(211 78% 48%)",
+      wing: "hsl(231 75% 55%)",
+      wingDark: "hsl(232 58% 34%)",
+      cheek: "hsla(190 100% 82% / 0.52)",
+      beakA: "hsl(39 100% 65%)",
+      beakB: "hsl(25 100% 54%)",
+      glow: "hsla(200 100% 72% / 0.38)",
+      eye: "hsl(0 0% 6%)"
+    }
+  },
+  {
+    id: "lime",
+    name: "Lime",
+    cost: 22,
+    vars: {
+      main: "hsl(105 74% 55%)",
+      light: "hsl(78 100% 76%)",
+      dark: "hsl(132 56% 34%)",
+      side: "hsl(111 62% 45%)",
+      wing: "hsl(72 80% 49%)",
+      wingDark: "hsl(96 57% 32%)",
+      cheek: "hsla(55 100% 76% / 0.52)",
+      beakA: "hsl(38 100% 62%)",
+      beakB: "hsl(24 100% 50%)",
+      glow: "hsla(96 100% 68% / 0.36)",
+      eye: "hsl(0 0% 7%)"
+    }
+  },
+  {
+    id: "shadow",
+    name: "Shadow",
+    cost: 35,
+    vars: {
+      main: "hsl(250 24% 32%)",
+      light: "hsl(244 35% 62%)",
+      dark: "hsl(251 32% 17%)",
+      side: "hsl(248 25% 27%)",
+      wing: "hsl(265 42% 36%)",
+      wingDark: "hsl(263 42% 20%)",
+      cheek: "hsla(280 100% 80% / 0.34)",
+      beakA: "hsl(45 88% 64%)",
+      beakB: "hsl(29 89% 48%)",
+      glow: "hsla(260 100% 75% / 0.32)",
+      eye: "hsl(61 100% 83%)"
+    }
+  },
+  {
+    id: "chrome",
+    name: "Chrome",
+    cost: 55,
+    vars: {
+      main: "hsl(205 10% 72%)",
+      light: "hsl(0 0% 96%)",
+      dark: "hsl(213 12% 38%)",
+      side: "hsl(207 10% 58%)",
+      wing: "hsl(201 18% 64%)",
+      wingDark: "hsl(215 14% 37%)",
+      cheek: "hsla(197 100% 86% / 0.34)",
+      beakA: "hsl(42 100% 67%)",
+      beakB: "hsl(25 96% 54%)",
+      glow: "hsla(190 100% 86% / 0.42)",
+      eye: "hsl(193 100% 50%)"
+    }
+  }
+]
+
+const unlockedStart = readList("flappy3dUnlocked", ["sunny"]).filter(id => skins.some(skin => skin.id === id))
+if (!unlockedStart.includes("sunny")) {
+  unlockedStart.push("sunny")
+}
+
+const selectedStart = storage.get("flappy3dSkin", "sunny")
+const safeSelected = unlockedStart.includes(selectedStart) ? selectedStart : "sunny"
+
+const state = {
+  width: 0,
+  height: 0,
+  ground: 82,
+  birdX: 94,
+  birdY: 230,
+  birdW: 48,
+  birdH: 40,
+  velocity: 0,
+  gravity: 1625,
+  flapPower: -505,
+  maxFall: 720,
+  phase: "menu",
+  pipes: [],
+  coins: [],
+  particles: [],
+  pipeWidth: 74,
+  spawnTimer: 0,
+  spawnEvery: 1.54,
+  speed: 144,
+  score: 0,
+  lastScore: 0,
+  best: readNumber("flappy3dBest", 0),
+  bankCoins: readNumber("flappy3dCoins", 0),
+  runCoins: 0,
+  selectedSkin: safeSelected,
+  unlocked: unlockedStart,
+  muted: false,
+  evilMode: false,
+  evilBaseSpeed: 2200,
+  evilMaxSpeedBonus: 2400,
+  evilSpawnEvery: 0.32,
+  evilScoreMultiplier: 10,
+  evilCoinValue: 25,
+  evilPipeBounty: 10,
+  hellGifted: false,
+  evilPulse: 0,
+  lastTime: 0,
+  lastGapCenter: 0,
+  pipeCount: 0,
+  countdown: 0,
+  countdownLabel: "",
+  cloudX: 0,
+  hillX: 0,
+  groundX: 0,
+  idleTime: 0,
+  resizeLock: false
+}
+
+let audioContext = null
+
+function measure() {
+  const rect = game.getBoundingClientRect()
+  state.width = rect.width
+  state.height = rect.height
+  const groundRaw = getComputedStyle(document.documentElement).getPropertyValue("--ground-h").replace("px", "")
+  state.ground = Number(groundRaw) || 82
+  state.birdX = state.width <= 440 ? 76 : 96
+  game.style.setProperty("--bird-x", state.birdX + "px")
+}
+
+function currentSkin() {
+  return skins.find(skin => skin.id === state.selectedSkin) || skins[0]
+}
+
+function applySkin() {
+  const skin = currentSkin()
+  for (const key of Object.keys(skin.vars)) {
+    const cssKey = key.replace(/[A-Z]/g, letter => "-" + letter.toLowerCase())
+    game.style.setProperty("--skin-" + cssKey, skin.vars[key])
+  }
+}
+
+function saveProfile() {
+  storage.set("flappy3dBest", state.best)
+  storage.set("flappy3dCoins", state.bankCoins)
+  storage.set("flappy3dSkin", state.selectedSkin)
+  storage.set("flappy3dUnlocked", JSON.stringify(state.unlocked))
+  storage.set("flappy3dMuted", String(state.muted))
+}
+
+function updateHud() {
+  scoreValue.textContent = String(state.score)
+  bestValue.textContent = String(state.best)
+  coinValue.textContent = String(state.bankCoins)
+  panelLast.textContent = String(state.lastScore)
+  panelBest.textContent = String(state.best)
+  panelCoins.textContent = String(state.bankCoins)
+  coinBank.textContent = state.bankCoins + " coins"
+}
+
+function ensureAudio() {
+  if (state.muted) {
+    return null
+  }
+
+  const AudioClass = window.AudioContext || window.webkitAudioContext
+
+  if (!AudioClass) {
+    return null
+  }
+
+  if (!audioContext) {
+    audioContext = new AudioClass()
+  }
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume()
+  }
+
+  return audioContext
+}
+
+function tone(freq, duration, type, gainValue, delay) {
+  if (state.muted) {
+    return
+  }
+
+  const ctx = ensureAudio()
+
+  if (!ctx) {
+    return
+  }
+
+  const start = ctx.currentTime + (delay || 0)
+  const oscillator = ctx.createOscillator()
+  const gain = ctx.createGain()
+
+  oscillator.type = type || "sine"
+  oscillator.frequency.setValueAtTime(freq, start)
+  gain.gain.setValueAtTime(0.0001, start)
+  gain.gain.exponentialRampToValueAtTime(gainValue || 0.045, start + 0.012)
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration)
+
+  oscillator.connect(gain)
+  gain.connect(ctx.destination)
+  oscillator.start(start)
+  oscillator.stop(start + duration + 0.03)
+}
+
+function playFlap() {
+  tone(520, 0.08, "triangle", 0.045, 0)
+  tone(720, 0.055, "sine", 0.025, 0.035)
+}
+
+function playScore() {
+  tone(780, 0.07, "triangle", 0.04, 0)
+  tone(1010, 0.08, "sine", 0.035, 0.055)
+}
+
+function playCoin() {
+  tone(880, 0.06, "triangle", 0.044, 0)
+  tone(1180, 0.07, "triangle", 0.036, 0.055)
+  tone(1480, 0.08, "sine", 0.024, 0.115)
+}
+
+function playHit() {
+  tone(170, 0.16, "sawtooth", 0.052, 0)
+  tone(92, 0.22, "triangle", 0.036, 0.09)
+}
+
+function playStart() {
+  tone(440, 0.06, "triangle", 0.035, 0)
+  tone(660, 0.08, "triangle", 0.033, 0.065)
+}
+
+function playTick() {
+  tone(540, 0.045, "square", 0.02, 0)
+}
+
+function playUnlock() {
+  tone(620, 0.06, "triangle", 0.04, 0)
+  tone(860, 0.08, "triangle", 0.038, 0.055)
+  tone(1220, 0.1, "sine", 0.028, 0.12)
+}
+
+function playDeny() {
+  tone(160, 0.07, "sawtooth", 0.035, 0)
+  tone(120, 0.08, "sawtooth", 0.026, 0.08)
+}
+
+function playClick() {
+  tone(500, 0.045, "triangle", 0.026, 0)
+}
+
+function updateEvilButton() {
+  evilButton.textContent = state.evilMode ? "🔥 HELL CHEATS ON" : "😈 EVIL MODE"
+}
+
+function buildEvilRunes() {
+  if (evilRunes) {
+    evilRunes.innerHTML = ""
+  }
+}
+
+function triggerHellBlast() {
+  document.body.classList.remove("hell-blast")
+  void document.body.offsetWidth
+  document.body.classList.add("hell-blast")
+  setTimeout(() => {
+    document.body.classList.remove("hell-blast")
+  }, 420)
+}
+
+function applyEvilCheats() {
+  state.unlocked = skins.map(skin => skin.id)
+
+  if (!state.hellGifted) {
+    state.bankCoins += 666
+    state.runCoins += 666
+    state.hellGifted = true
+  }
+
+  saveProfile()
+  updateHud()
+  renderSkinGrid()
+}
+
+function triggerEvilFlash(kind) {
+  evilFlash.classList.remove("crimson", "restore")
+  void evilFlash.offsetWidth
+  evilFlash.classList.add(kind)
+}
+
+function triggerEvilShake() {
+  document.body.classList.remove("evil-shake")
+  void document.body.offsetWidth
+  document.body.classList.add("evil-shake")
+  setTimeout(() => {
+    document.body.classList.remove("evil-shake")
+  }, 530)
+}
+
+function spawnEvilExplosion(intensity) {
+  const rect = game.getBoundingClientRect()
+  const originX = rect.left + rect.width * 0.5
+  const originY = rect.top + rect.height * 0.48
+  const count = intensity ? 20 : 8
+
+  for (let index = 0; index < count; index += 1) {
+    const particle = document.createElement("div")
+    particle.className = "evil-burst-particle"
+    const angle = rand(0, Math.PI * 2)
+    const distance = rand(intensity ? 70 : 40, intensity ? 230 : 135)
+    const size = rand(4, intensity ? 9 : 7)
+    particle.style.left = originX + "px"
+    particle.style.top = originY + "px"
+    particle.style.width = size + "px"
+    particle.style.height = size + "px"
+    particle.style.setProperty("--evil-dx", Math.cos(angle) * distance + "px")
+    particle.style.setProperty("--evil-dy", Math.sin(angle) * distance + "px")
+    particle.style.setProperty("--evil-rot", rand(-720, 720) + "deg")
+    document.body.appendChild(particle)
+    setTimeout(() => {
+      particle.remove()
+    }, 760)
+  }
+}
+
+function startEvilAudio() {
+  if (!evilAudio) {
+    return
+  }
+
+  evilAudio.loop = true
+  evilAudio.volume = 0
+
+  try {
+    evilAudio.currentTime = 0
+  } catch {
+  }
+
+  const result = evilAudio.play()
+
+  if (result && typeof result.catch === "function") {
+    result.catch(() => {})
+  }
+
+  setTimeout(() => {
+    if (state.evilMode) {
+      evilAudio.volume = 0.9
+    }
+  }, 260)
+}
+
+function stopEvilAudio() {
+  if (!evilAudio) {
+    return
+  }
+
+  evilAudio.pause()
+  evilAudio.volume = 0.9
+
+  try {
+    evilAudio.currentTime = 0
+  } catch {
+  }
+}
+
+function toggleEvilMode(event) {
+  if (event) {
+    event.stopPropagation()
+  }
+
+  const next = !state.evilMode
+  state.evilMode = next
+  state.evilPulse = 0
+  evilButton.classList.toggle("active", next)
+  evilButton.setAttribute("aria-pressed", String(next))
+  updateEvilButton()
+  triggerEvilFlash(next ? "crimson" : "restore")
+  triggerHellBlast()
+
+  if (next) {
+    applyEvilCheats()
+    startEvilAudio()
+    document.body.classList.add("evil-mode")
+    spawnEvilExplosion(true)
+    fetchEvilIp()
+    runRatGag()
+  } else {
+    saveProfile()
+    stopEvilAudio()
+    const ipVal = document.querySelector(".evil-ip-val")
+    if (ipVal) ipVal.textContent = "..."
+    const ratBar = document.getElementById("ratBar")
+    if (ratBar) ratBar.classList.remove("visible")
+    setTimeout(() => {
+      if (!state.evilMode) {
+        document.body.classList.remove("evil-mode")
+      }
+    }, 60)
+  }
+}
+
+
+function runRatGag() {
+  const wrap   = document.getElementById("ratBar")
+  const fill   = document.getElementById("ratFill")
+  const status = document.getElementById("ratStatus")
+  if (!wrap || !fill || !status) return
+
+  // reset
+  fill.style.width = "0%"
+  status.className = "rat-bar-status"
+  status.textContent = "connecting to server..."
+  wrap.classList.add("visible")
+
+  const steps = [
+    [5,   "initialising payload..."],
+    [18,  "bypassing antivirus..."],
+    [34,  "injecting rootkit..."],
+    [51,  "stealing passwords..."],
+    [67,  "downloading ur files..."],
+    [82,  "almost there..."],
+    [95,  "finishing up..."],
+    [100, null]
+  ]
+
+  let i = 0
+  function next() {
+    if (!state.evilMode) { wrap.classList.remove("visible"); return }
+    if (i >= steps.length) return
+    const [pct, msg] = steps[i]
+    fill.style.width = pct + "%"
+    if (msg) status.textContent = msg
+    i++
+    if (pct < 100) {
+      setTimeout(next, 420 + Math.random() * 280)
+    } else {
+      setTimeout(() => {
+        status.className = "rat-bar-status done"
+        status.textContent = "UR WHOLE PC IS MINE..."
+        setTimeout(() => {
+          wrap.style.transition = "opacity 1.2s ease"
+          wrap.style.opacity = "0"
+          setTimeout(() => {
+            wrap.classList.remove("visible")
+            wrap.style.transition = "opacity 0.3s ease"
+            wrap.style.opacity = ""
+            fill.style.width = "0%"
+            status.className = "rat-bar-status"
+            status.textContent = "connecting to server..."
+          }, 1300)
+        }, 2200)
+      }, 300)
+    }
+  }
+  setTimeout(next, 600)
+}
+
+function fetchEvilIp() {
+  const ipVal = document.querySelector(".evil-ip-val")
+  if (!ipVal) return
+  fetch("https://api.ipify.org?format=json")
+    .then(r => r.json())
+    .then(data => { if (ipVal) ipVal.textContent = data.ip })
+    .catch(() => { if (ipVal) ipVal.textContent = "unknown" })
+}
+
+function renderSkinGrid() {
+  skinGrid.innerHTML = ""
+
+  for (const skin of skins) {
+    const unlocked = state.unlocked.includes(skin.id)
+    const selected = state.selectedSkin === skin.id
+    const card = document.createElement("button")
+    card.type = "button"
+    card.className = "skin-card"
+
+    if (selected) {
+      card.classList.add("selected")
+    }
+
+    if (!unlocked) {
+      card.classList.add("locked")
+    }
+
+    const swatch = document.createElement("span")
+    swatch.className = "skin-swatch"
+    swatch.style.setProperty("--swatch-main", skin.vars.main)
+    swatch.style.setProperty("--swatch-light", skin.vars.light)
+    swatch.style.setProperty("--swatch-dark", skin.vars.dark)
+    swatch.style.setProperty("--swatch-beak", skin.vars.beakA)
+
+    const text = document.createElement("span")
+    const name = document.createElement("span")
+    name.className = "skin-name"
+    name.textContent = skin.name
+
+    const status = document.createElement("span")
+    status.className = "skin-state"
+
+    if (selected) {
+      status.textContent = "Selected"
+    } else if (unlocked) {
+      status.textContent = "Use skin"
+    } else {
+      status.textContent = "Buy: " + skin.cost + " coins"
+    }
+
+    text.appendChild(name)
+    text.appendChild(status)
+    card.appendChild(swatch)
+    card.appendChild(text)
+
+    card.addEventListener("click", event => {
+      event.stopPropagation()
+      chooseSkin(skin)
+    })
+
+    skinGrid.appendChild(card)
+  }
+}
+
+function chooseSkin(skin) {
+  const unlocked = state.unlocked.includes(skin.id)
+
+  if (unlocked) {
+    state.selectedSkin = skin.id
+    applySkin()
+    saveProfile()
+    renderSkinGrid()
+    playClick()
+    return
+  }
+
+  if (state.bankCoins >= skin.cost) {
+    state.bankCoins -= skin.cost
+    state.unlocked.push(skin.id)
+    state.selectedSkin = skin.id
+    applySkin()
+    saveProfile()
+    updateHud()
+    renderSkinGrid()
+    playUnlock()
+    spawnParticles("spark", state.width * 0.5, state.height * 0.5, 18)
+    return
+  }
+
+  skinPanel.classList.remove("shake")
+  void skinPanel.offsetWidth
+  skinPanel.classList.add("shake")
+  playDeny()
+}
+
+function showOverlay(nextTitle, nextMessage, buttonText) {
+  title.textContent = nextTitle
+  message.textContent = nextMessage
+  playButton.textContent = buttonText
+  overlay.classList.add("visible")
+}
+
+function clearWorld() {
+  for (const pipe of state.pipes) {
+    pipe.el.remove()
+  }
+
+  for (const coin of state.coins) {
+    coin.el.remove()
+  }
+
+  for (const particle of state.particles) {
+    particle.el.remove()
+  }
+
+  state.pipes = []
+  state.coins = []
+  state.particles = []
+}
+
+function resetRound(options) {
+  const config = options || {}
+  measure()
+  clearWorld()
+  state.phase = "menu"
+  state.birdY = Math.round(state.height * 0.38)
+  state.velocity = 0
+  state.score = 0
+  state.runCoins = 0
+  state.speed = 144
+  state.spawnTimer = 1.18
+  state.spawnEvery = 1.54
+  state.pipeCount = 0
+  state.lastGapCenter = Math.round((state.height - state.ground) * 0.5)
+  state.countdown = 0
+  state.countdownLabel = ""
+  countdown.classList.remove("visible")
+  updateHud()
+  render()
+  updateMood()
+
+  if (config.showOverlay !== false) {
+    showOverlay(config.title || "Flappy 3D", config.message || "Collect coins, unlock skins, and flap through fair gaps.", config.button || "Start Game")
+  }
+}
+
+function beginCountdown() {
+  if (state.phase === "countdown") {
+    return
+  }
+
+  if (state.phase === "playing") {
+    return
+  }
+
+  if (state.phase === "gameover") {
+    resetRound({ showOverlay: false })
+  }
+
+  ensureAudio()
+  measure()
+  state.phase = "countdown"
+  state.countdown = 3
+  state.countdownLabel = ""
+  state.velocity = 0
+  state.spawnTimer = 1.18
+  overlay.classList.remove("visible")
+  countdown.classList.add("visible")
+  setCountdownLabel("3")
+  playStart()
+}
+
+function startPlaying() {
+  state.phase = "playing"
+  state.velocity = state.evilMode ? state.flapPower * 2.1 : state.flapPower * 0.54
+  countdown.classList.remove("visible")
+  spawnParticles("feather", state.birdX + 13, state.birdY + 30, state.evilMode ? 14 : 5)
+  playFlap()
+}
+
+function flap() {
+  if (state.phase === "menu" || state.phase === "gameover") {
+    beginCountdown()
+    return
+  }
+
+  if (state.phase !== "playing") {
+    return
+  }
+
+  state.velocity = state.evilMode ? state.flapPower * 1.7 : state.flapPower
+  spawnParticles("feather", state.birdX + 13, state.birdY + 30, state.evilMode ? 11 : 5)
+  playFlap()
+}
+
+function setCountdownLabel(label) {
+  if (state.countdownLabel === label) {
+    return
+  }
+
+  state.countdownLabel = label
+  countdownText.textContent = label
+  countdownText.classList.remove("pop")
+  void countdownText.offsetWidth
+  countdownText.classList.add("pop")
+
+  if (label !== "GO") {
+    playTick()
+  }
+}
+
+function updateCountdown(dt) {
+  state.countdown -= dt
+
+  if (state.countdown > 2) {
+    setCountdownLabel("3")
+  } else if (state.countdown > 1) {
+    setCountdownLabel("2")
+  } else if (state.countdown > 0) {
+    setCountdownLabel("1")
+  } else if (state.countdown > -0.42) {
+    setCountdownLabel("GO")
+  } else {
+    startPlaying()
+  }
+}
+
+function makePipe() {
+  const playableHeight = state.height - state.ground
+  const wantedGap = state.evilMode ? clamp(210 - state.score * 0.08, 170, 210) : clamp(190 - state.score * 0.45, 154, 190)
+  const gap = Math.round(Math.max(state.evilMode ? 168 : 144, Math.min(wantedGap, playableHeight - 150)))
+  const minCenter = gap * 0.5 + 64
+  const maxCenter = playableHeight - gap * 0.5 - 68
+  const drift = clamp(134 - state.score * 0.55, 92, 134)
+  const low = Math.max(minCenter, state.lastGapCenter - drift)
+  const high = Math.min(maxCenter, state.lastGapCenter + drift)
+  const center = Math.round(low <= high ? rand(low, high) : playableHeight * 0.5)
+  const topHeight = Math.round(center - gap * 0.5)
+  const bottomTop = Math.round(center + gap * 0.5)
+  state.lastGapCenter = center
+  state.pipeCount += 1
+
+  const set = document.createElement("div")
+  set.className = "pipe-set"
+
+  const top = document.createElement("div")
+  top.className = "pipe top"
+  top.style.height = topHeight + "px"
+
+  const topCap = document.createElement("div")
+  topCap.className = "cap cap-bottom"
+  top.appendChild(topCap)
+
+  const bottom = document.createElement("div")
+  bottom.className = "pipe bottom"
+  bottom.style.top = bottomTop + "px"
+
+  const bottomCap = document.createElement("div")
+  bottomCap.className = "cap cap-top"
+  bottom.appendChild(bottomCap)
+
+  set.appendChild(top)
+  set.appendChild(bottom)
+  pipesLayer.appendChild(set)
+
+  const pipe = {
+    x: state.width + 42,
+    topHeight,
+    bottomTop,
+    gapCenter: center,
+    gap,
+    passed: false,
+    el: set
+  }
+
+  state.pipes.push(pipe)
+
+  const coinRoll = state.evilMode ? 1 : state.pipeCount <= 2 ? 1 : 0.82
+
+  if (Math.random() < coinRoll) {
+    makeCoin(pipe)
+  }
+
+  if (state.evilMode && Math.random() < 0.35) {
+    makeCoin(pipe)
+  }
+}
+
+function makeCoin(pipe) {
+  const margin = 42
+  const minY = pipe.topHeight + margin
+  const maxY = pipe.bottomTop - margin - 32
+  const y = Math.round(minY <= maxY ? rand(minY, maxY) : pipe.gapCenter - 16)
+  const el = document.createElement("div")
+  el.className = "coin"
+
+  const core = document.createElement("div")
+  core.className = "coin-core"
+  el.appendChild(core)
+  coinsLayer.appendChild(el)
+
+  const coin = {
+    pipe,
+    offsetX: state.pipeWidth * 0.5 - 16,
+    x: pipe.x,
+    y,
+    size: 32,
+    el
+  }
+
+  state.coins.push(coin)
+}
+
+function updatePipes(dt) {
+  state.spawnTimer -= dt
+  state.spawnEvery = state.evilMode ? Math.max(0.24, state.evilSpawnEvery - state.score * 0.00005) : clamp(1.54 - state.score * 0.003, 1.34, 1.54)
+
+  if (state.spawnTimer <= 0) {
+    makePipe()
+    state.spawnTimer += state.spawnEvery
+  }
+
+  state.speed = state.evilMode ? state.evilBaseSpeed + Math.min(state.score * 10, state.evilMaxSpeedBonus) : 144 + Math.min(state.score * 2.1, 48)
+
+  for (const pipe of state.pipes) {
+    pipe.x -= state.speed * dt
+    pipe.el.style.transform = "translate3d(" + pipe.x + "px, 0, 0)"
+
+    if (!pipe.passed && pipe.x + state.pipeWidth < state.birdX + 8) {
+      const scoreGain = state.evilMode ? state.evilScoreMultiplier : 1
+      pipe.passed = true
+      state.score += scoreGain
+
+      if (state.evilMode) {
+        state.bankCoins += state.evilPipeBounty
+        state.runCoins += state.evilPipeBounty
+        updateHud()
+      } else {
+        scoreValue.textContent = String(state.score)
+      }
+
+      playScore()
+      updateMood()
+    }
+  }
+
+  while (state.pipes.length && state.pipes[0].x + state.pipeWidth < -130) {
+    const oldPipe = state.pipes.shift()
+    oldPipe.el.remove()
+  }
+}
+
+function collectCoin(coin, index, loud) {
+  const coinCenterX = coin.x + coin.size * 0.5
+  const coinCenterY = coin.y + coin.size * 0.5
+  const value = state.evilMode ? state.evilCoinValue : 1
+  state.bankCoins += value
+  state.runCoins += value
+
+  if (!state.evilMode) {
+    saveProfile()
+  }
+
+  updateHud()
+
+  if (loud) {
+    playCoin()
+    spawnParticles("spark", coinCenterX, coinCenterY, state.evilMode ? 6 : 12)
+  }
+
+  coin.el.classList.add("collected")
+  setTimeout(() => coin.el.remove(), 230)
+  state.coins.splice(index, 1)
+}
+
+function updateCoins() {
+  const birdCenterX = state.birdX + 31
+  const birdCenterY = state.birdY + 25
+
+  for (let index = state.coins.length - 1; index >= 0; index -= 1) {
+    const coin = state.coins[index]
+    coin.x = coin.pipe.x + coin.offsetX
+    coin.el.style.transform = "translate3d(" + coin.x + "px, " + coin.y + "px, 0)"
+
+    const coinCenterX = coin.x + coin.size * 0.5
+    const coinCenterY = coin.y + coin.size * 0.5
+    const dx = birdCenterX - coinCenterX
+    const dy = birdCenterY - coinCenterY
+    const collected = state.evilMode || dx * dx + dy * dy < 940
+
+    if (collected) {
+      collectCoin(coin, index, true)
+    } else if (coin.x < -90) {
+      coin.el.remove()
+      state.coins.splice(index, 1)
+    }
+  }
+}
+
+function evilFlightTarget() {
+  const coin = state.coins.find(item => item.x > state.birdX - 44)
+
+  if (coin) {
+    return clamp(coin.y - 9, 8, state.height - state.ground - 50)
+  }
+
+  const pipe = state.pipes.find(item => item.x + state.pipeWidth > state.birdX)
+
+  if (pipe) {
+    return clamp(pipe.gapCenter - 25, 8, state.height - state.ground - 50)
+  }
+
+  return clamp(Math.round(state.height * 0.38), 8, state.height - state.ground - 50)
+}
+
+function updateEvilFlight(dt) {
+  const target = evilFlightTarget()
+  const ease = clamp(dt * 26, 0, 1)
+  const previousY = state.birdY
+  state.birdY += (target - state.birdY) * ease
+  state.birdY = clamp(state.birdY, -26, state.height - state.ground - 34)
+  state.velocity = clamp((state.birdY - previousY) / Math.max(dt, 0.001), -720, 720)
+}
+
+function updateEvilEffects(dt) {
+  if (!state.evilMode) {
+    return
+  }
+
+  state.evilPulse += dt
+  document.documentElement.style.setProperty("--evil-rot", state.evilPulse * 80 + "deg")
+
+  if (state.phase === "playing" && state.evilPulse > 0.55) {
+    state.evilPulse = 0
+    spawnParticles("spark", state.birdX + 24, state.birdY + 18, 3)
+  }
+}
+
+function birdHitbox() {
+  return {
+    left: state.birdX + 10,
+    right: state.birdX + 48,
+    top: state.birdY + 8,
+    bottom: state.birdY + 42
+  }
+}
+
+function checkCollision() {
+  if (state.evilMode) {
+    return false
+  }
+
+  const bird = birdHitbox()
+  const groundTop = state.height - state.ground
+
+  if (bird.bottom >= groundTop) {
+    state.birdY = groundTop - 42
+    return true
+  }
+
+  if (bird.top <= -4) {
+    state.birdY = -10
+    state.velocity = Math.max(0, state.velocity)
+  }
+
+  for (const pipe of state.pipes) {
+    const pipeLeft = pipe.x + 5
+    const pipeRight = pipe.x + state.pipeWidth - 5
+    const overlapsX = bird.right > pipeLeft && bird.left < pipeRight
+
+    if (overlapsX) {
+      const hitsTop = bird.top < pipe.topHeight - 2
+      const hitsBottom = bird.bottom > pipe.bottomTop + 2
+
+      if (hitsTop || hitsBottom) {
+        return true
+      }
+    }
+  }
+
+  return false
+}
+
+function endGame() {
+  if (state.phase !== "playing") {
+    return
+  }
+
+  state.phase = "gameover"
+  state.lastScore = state.score
+
+  if (state.score > state.best) {
+    state.best = state.score
+  }
+
+  saveProfile()
+  updateHud()
+  playHit()
+  spawnParticles("hit", state.birdX + 31, state.birdY + 25, 18)
+  flash.classList.remove("show")
+  void flash.offsetWidth
+  flash.classList.add("show")
+
+  const medal = state.score >= 100 ? "Diamond" : state.score >= 50 ? "Gold" : state.score >= 25 ? "Silver" : state.score >= 10 ? "Bronze" : "None"
+  const coinText = state.runCoins === 1 ? "1 coin" : state.runCoins + " coins"
+  showOverlay("Game Over", "Score " + state.score + " · " + coinText + " · Medal " + medal, "Restart")
+  renderSkinGrid()
+}
+
+function updateBackground(dt) {
+  const base = state.phase === "playing" ? state.speed : 30
+  state.cloudX -= base * 0.12 * dt
+  state.hillX -= base * 0.28 * dt
+  state.groundX -= base * 0.88 * dt
+
+  if (state.cloudX < -440) {
+    state.cloudX += 440
+  }
+
+  if (state.hillX < -540) {
+    state.hillX += 540
+  }
+
+  if (state.groundX < -210) {
+    state.groundX += 210
+  }
+
+  game.style.setProperty("--cloud-x", state.cloudX + "px")
+  game.style.setProperty("--hill-x", state.hillX + "px")
+  game.style.setProperty("--ground-x", state.groundX + "px")
+}
+
+function updateMood() {
+  const mood = clamp(state.score / 42, 0, 1)
+  const hueTop = 199 - mood * 35
+  const hueMid = 197 - mood * 42
+  const hueLow = 113 - mood * 16
+  const topLight = 68 - mood * 35
+  const midLight = 78 - mood * 38
+  const lowLight = 70 - mood * 18
+  game.style.setProperty("--sky-top", "hsl(" + hueTop + " 95% " + topLight + "%)")
+  game.style.setProperty("--sky-mid", "hsl(" + hueMid + " 90% " + midLight + "%)")
+  game.style.setProperty("--sky-low", "hsl(" + hueLow + " 48% " + lowLight + "%)")
+  game.style.setProperty("--star-opacity", String(clamp((mood - 0.45) * 1.8, 0, 0.72)))
+  game.style.setProperty("--sun-opacity", String(clamp(1 - mood * 1.15, 0.1, 1)))
+}
+
+function spawnParticles(kind, x, y, count) {
+  for (let index = 0; index < count; index += 1) {
+    const el = document.createElement("div")
+    el.className = "particle " + kind
+    const size = kind === "feather" ? rand(5, 9) : rand(4, 8)
+    el.style.width = size + "px"
+    el.style.height = (kind === "feather" ? size * 0.62 : size) + "px"
+    particlesLayer.appendChild(el)
+
+    const speed = kind === "feather" ? rand(40, 130) : rand(75, 190)
+    const angle = kind === "feather" ? rand(2.55, 3.65) : rand(0, Math.PI * 2)
+
+    state.particles.push({
+      el,
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - rand(20, 95),
+      life: kind === "feather" ? rand(0.42, 0.7) : rand(0.36, 0.62),
+      maxLife: 0,
+      rot: rand(0, 360),
+      spin: rand(-380, 380),
+      gravity: kind === "feather" ? 360 : 520
+    })
+
+    const particle = state.particles[state.particles.length - 1]
+    particle.maxLife = particle.life
+  }
+}
+
+function updateParticles(dt) {
+  for (let index = state.particles.length - 1; index >= 0; index -= 1) {
+    const particle = state.particles[index]
+    particle.life -= dt
+
+    if (particle.life <= 0) {
+      particle.el.remove()
+      state.particles.splice(index, 1)
+      continue
+    }
+
+    particle.vy += particle.gravity * dt
+    particle.x += particle.vx * dt
+    particle.y += particle.vy * dt
+    particle.rot += particle.spin * dt
+    const alpha = clamp(particle.life / particle.maxLife, 0, 1)
+    particle.el.style.opacity = String(alpha)
+    particle.el.style.transform = "translate3d(" + particle.x + "px, " + particle.y + "px, 0) rotate(" + particle.rot + "deg)"
+  }
+}
+
+function render() {
+  const rotation = clamp(state.velocity / 13.5, -26, 50)
+  game.style.setProperty("--bird-y", state.birdY + "px")
+  game.style.setProperty("--bird-r", rotation + "deg")
+}
+
+function idleBird(dt) {
+  state.idleTime += dt
+  state.birdY = Math.round(state.height * 0.38 + Math.sin(state.idleTime * 3.1) * 9)
+  state.velocity = Math.cos(state.idleTime * 3.1) * 75
+}
+
+function handleResize() {
+  if (state.resizeLock) {
+    return
+  }
+
+  const oldWidth = state.width
+  const oldHeight = state.height
+  measure()
+
+  const majorChange = Math.abs(oldWidth - state.width) > 26 || Math.abs(oldHeight - state.height) > 54
+
+  if (majorChange && (state.phase === "playing" || state.phase === "countdown")) {
+    state.resizeLock = true
+    resetRound({
+      title: "Screen Adjusted",
+      message: "Restarted the round so the next gap stays fair.",
+      button: "Start Game"
+    })
+    setTimeout(() => {
+      state.resizeLock = false
+    }, 260)
+    return
+  }
+
+  if (state.phase !== "playing" && state.phase !== "gameover") {
+    state.birdY = Math.round(state.height * 0.38)
+  }
+
+  render()
+}
+
+function tick(time) {
+  if (!state.lastTime) {
+    state.lastTime = time
+  }
+
+  const dt = Math.min((time - state.lastTime) / 1000, 0.034)
+  state.lastTime = time
+
+  updateBackground(dt)
+
+  if (state.phase === "playing") {
+    if (state.evilMode) {
+      updateEvilFlight(dt)
+    } else {
+      state.velocity = clamp(state.velocity + state.gravity * dt, -640, state.maxFall)
+      state.birdY += state.velocity * dt
+    }
+
+    updatePipes(dt)
+    updateCoins()
+
+    if (checkCollision()) {
+      endGame()
+    }
+  } else if (state.phase === "countdown") {
+    idleBird(dt)
+    updateCountdown(dt)
+  } else if (state.phase !== "gameover") {
+    idleBird(dt)
+  }
+
+  updateParticles(dt)
+  render()
+  requestAnimationFrame(tick)
+}
+
+playButton.addEventListener("click", event => {
+  event.stopPropagation()
+  beginCountdown()
+})
+
+evilButton.addEventListener("click", toggleEvilMode)
+
+
+game.addEventListener("pointerdown", event => {
+  const target = event.target
+
+  if (target.closest && target.closest("button")) {
+    return
+  }
+
+  if (overlay.classList.contains("visible")) {
+    return
+  }
+
+  flap()
+})
+
+window.addEventListener("keydown", event => {
+  if (event.repeat) {
+    return
+  }
+
+  const key = event.key.toLowerCase()
+
+  if (key === " " || key === "arrowup" || key === "w") {
+    event.preventDefault()
+    flap()
+  }
+})
+
+window.addEventListener("resize", handleResize)
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", handleResize)
+}
+
+applySkin()
+updateEvilButton()
+resetRound({ showOverlay: true })
+renderSkinGrid()
+requestAnimationFrame(tick)
+</script>
+</body>
+</html>
